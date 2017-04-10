@@ -6,8 +6,8 @@ We will be doing an evaluation of side-channels in runtime systems. Side-channel
 
 ## Team
 
-Tegan Brennan (8133175)
-Miroslav Gavrilov (9379132)
+- Tegan Brennan (8133175)
+- Miroslav Gavrilov (9379132)
 
 ## Resources
 
