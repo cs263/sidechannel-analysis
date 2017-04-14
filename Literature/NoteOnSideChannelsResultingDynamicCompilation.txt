@@ -1,0 +1,52 @@
+Note on Side-Channels Resulting from Dynamic Compilation:
+Main goal -- to determine whether the dynamic compilation of Java programs can
+introduce side channel vulnerabilities into the executed code when there were
+none in the original code. 
+
+In attempting to extract higher levels of perfomancing, a dynamic compiler
+might transform a secure program into an insecure one. This is particularly
+concerning as the programmer might have no idea that such a vulnerability was
+introduced. 
+
+Case Study -- Elliptic Curve Cryptography 
+
+The double-and-add method is an additive version of binary exponentiation used
+in ECC based systems. Generally, the profiles of the addition and doubling
+phases are distinguishable from one another. An attacker can thus determine the
+sequence of additions and doubling, allowing them to recover the
+secret key used in encryption. One way to eliminate this side channel is to
+always perform both an addition and doubling, but this is very inefficient.
+Another, more commonly used approach, is to split the more expensive addition
+step into two parts, each of which resembles the doubling step in terms of
+execution profile. 
+
+A java implementation of this side channel resistant version of the
+double-and-add program was analyzed in order to determine the effect of
+optimization on side channel vulnerabilities. It was run on the Jikes Research
+Virtual Machine (RVM) with the default options for the adaptive optimization
+system.
+Because the doubling method was called more frequently than the addition
+methods, it was identified as a hotspot in the program and was optimized by the
+RVM. The addition method was eventualy optimized as well, but nevertheless
+there is a window in which the optimized double method is in use at the same
+time was the unoptimized addition method. The profiles of these two methods are
+very distinguishable. Even once the addition method is optimized, the two are
+distinguishable, though less so, due to differing results of optimization.
+The RVM adaptive optimization system therefore introduced a side channel
+vulnerability when there was none in the original code. 
+
+Possible Solutions:
+One possible patch highlighted in the paper is to allow code fragments to be
+annotated with information that allows the virtual machine to avoid introducing
+vulnerabilities into the code. A basic solution would be to include an
+annotation that instructs the dynamic compiler to leave the associated method
+alone. This of course trades performance for security. Another approach would
+be to specify that dynamic compilation is permitted provided that the two
+methods still match each other in terms of cost. While more work is needed to
+determine how such a compilation phase might occur, there is already
+pre-existing work that allows for the detection of any mismatch between the
+results of re-compilation that might be reusable for this task. 
+ 
+Conclusion:
+Optimizations introduced by dynamic compilation can indeed introduce side
+channels into code when there was none in the souce. 
