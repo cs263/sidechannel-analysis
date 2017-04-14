@@ -16,7 +16,7 @@ We will be doing an evaluation of side-channels in runtime systems. Side-channel
 - [A Note On Side-Channels Resulting From Dynamic Compilation](https://eprint.iacr.org/2006/349.pdf)
 - [Compiler Mitigations for Time Attacks on Modern x86 Processors](https://pdfs.semanticscholar.org/5727/7ff4c38a86d84a8fb7eb09625d5a2c545f7c.pdf)
 - [MSC06-CPP. Be aware of compiler optimization when dealing with sensitive data](https://www.securecoding.cert.org/confluence/display/cplusplus/MSC06-CPP.+Be+aware+of+compiler+optimization+when+dealing+with+sensitive+data)
-
+- [JVM versus CLR: A Comparative Study](https://pdfs.semanticscholar.org/b57a/af581e043fb63c56ebd662720190e3121220.pdf)
 ## Tools Used
 
 - For build duties, we're testing out an in-house tool called `gyros`, which does automatic background rebuilds guided by recipes and tries to do a generally better job than Makefiles (source code not included because it would be cheating, but available [here](https://github.com/gavrilovmiroslav/gyros).
