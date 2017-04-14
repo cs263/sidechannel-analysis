@@ -1,0 +1,17 @@
+
+define :docs => "documents"
+define :exps => "experiments"
+define :notes => "notes"
+
+first_time = doesnt_exist? docs
+require_directory docs
+require_directory exps
+require_directory notes
+
+when_modifying ".tex" do
+    dir = File.dirname path
+    run "rubber --into #{dir} --pdf #{target}"
+    run "rm -rf #{dir}/*.aux #{dir}/*.log #{dir}/*.dvi"
+end
+
+stop if first_time
