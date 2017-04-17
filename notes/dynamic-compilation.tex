@@ -1,5 +1,9 @@
-Note on Side-Channels Resulting from Dynamic Compilation:
-Main goal -- to determine whether the dynamic compilation of Java programs can
+
+\section{Notes on Side-Channels Resulting \\ from Dynamic Compilation}
+
+\subsection{Main Goals}
+
+The main goal of this paper is to determine whether the dynamic compilation of Java programs can
 introduce side channel vulnerabilities into the executed code when there were
 none in the original code. 
 
@@ -8,7 +12,7 @@ might transform a secure program into an insecure one. This is particularly
 concerning as the programmer might have no idea that such a vulnerability was
 introduced. 
 
-Case Study -- Elliptic Curve Cryptography 
+\subsection{Case Study -- Elliptic Curve Cryptography}
 
 The double-and-add method is an additive version of binary exponentiation used
 in ECC based systems. Generally, the profiles of the addition and doubling
@@ -35,7 +39,7 @@ distinguishable, though less so, due to differing results of optimization.
 The RVM adaptive optimization system therefore introduced a side channel
 vulnerability when there was none in the original code. 
 
-Possible Solutions:
+\subsubsection{Possible Solutions}
 One possible patch highlighted in the paper is to allow code fragments to be
 annotated with information that allows the virtual machine to avoid introducing
 vulnerabilities into the code. A basic solution would be to include an
@@ -47,6 +51,6 @@ determine how such a compilation phase might occur, there is already
 pre-existing work that allows for the detection of any mismatch between the
 results of re-compilation that might be reusable for this task. 
  
-Conclusion:
+\subsection{Conclusion}
 Optimizations introduced by dynamic compilation can indeed introduce side
 channels into code when there was none in the souce. 

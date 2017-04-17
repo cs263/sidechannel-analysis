@@ -9,9 +9,11 @@ require_directory exps
 require_directory notes
 
 when_modifying ".tex" do
-    dir = File.dirname path
-    run "rubber --into #{dir} --pdf #{target}"
-    run "rm -rf #{dir}/*.aux #{dir}/*.log #{dir}/*.dvi"
+    if File.read(path).include? "\\begin{document}"
+        dir = File.dirname path
+        run "rubber --into #{dir} --pdf #{target}"
+        run "rm -rf #{dir}/*.aux #{dir}/*.log #{dir}/*.dvi"
+    end
 end
 
 stop if first_time

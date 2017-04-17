@@ -1,23 +1,23 @@
-Thwarting Cache Side-Channel Attacks Through Dynamic Software Diversity
 
-Main question -- Can dynamic compilation be used to reduce potential side
-channel information leakage?
+\section{Thwarting Cache Side-Channel Attacks \\ Through Dynamic Software Diversity}
 
-Here, software diversity is explored as a defense against side channel attacks
+\subsection{Main Goals}
+The main question of this paper is whether dynamic compilation can be used to reduce potential side-channel information leakage?
+
+Here, software diversity is explored as a defense against side-channel attacks
 through dynamically randomizing the control flow of programs. Traditionally,
 software diversification focuses on randomizing the program's representation,
-such as the in-memory addresses of data. However, side channel attacks rely on
+such as the in-memory addresses of data. However, side-channel attacks rely on
 dynamic properties of programs such as execution time and memory latencies.
 This calls for a software diversification technique that randomizes the
 program's execution as opposed to representation. 
 
-Pre-existing diversification techniques may already have an impact on side
-channels. For example, even re-ordering functions can have a large effect on
+Pre-existing diversification techniques may already have an impact on side-channels. For example, even re-ordering functions can have a large effect on
 cache usage and performance. However, static compile time or load time
 diversity is not enough since an attacker can simply use the static target
 binary to generate a profile of the runtime characteristics of the program.
 Even re-diversifying and switching to a new variant during execution is
-insufficient as side channels are fast enough to complete between
+insufficient as side-channels are fast enough to complete between
 re-diversification cycles. Instead, the authors create a diversification model
 which creates a version of the program consisting of replicated code fragments
 with randomized control flow to switch between alternative replicas at runtime.
@@ -30,21 +30,20 @@ have differing runtime characteristics. These program fragments are then
 integrated into a program that dynamically chooses a control flow path at
 runtime. 
 
-Case Study -- Mitigating Cache Side Channel Attacks 
+\subsection{Case Study -- Mitigating Cache Side-Channel Attacks}
 
-Pre-existing side channel attacks against the AES encryption scheme exploit
+Pre-existing side-channel attacks against the AES encryption scheme exploit
 cache behavior to determine the secret key. The authors implemented these
-attacks against AES-128 routine in libcrypt 1.6.1. Two cache based side channel
-attacks were evaluated, one which was able to recover 96% and the other 82% of
+attacks against AES-128 routine in libcrypt 1.6.1. Two cache based side-channel
+attacks were evaluated, one which was able to recover $96\%$ and the other $82\%$ of
 the secret bits for a set number of iterations in the base case. Code
 diversification was demonstrated to have an impact on the success rate of both
 attacks. Static diversification performed decently, reducing the number of
-correctly guessed bits to 104-108 of 128 for the first attack but to 52 for the
-second. However, the dynamic approach presented by the authos mtitigated the
-side channels much more powerfully, reducing the number of correctly guessed
-bits to 20 for the first attack and to 14 for the second. 
-
-This demonstrates the potential for compiler based code diversification to
-protect against side channel attacks, which could be a promising avenue for
-greater security. 
-
+correctly guessed bits to $104-108$ of $128$ for the first attack but to $52$ for the
+second. However, the dynamic approach presented by the authors mitigated the
+side-channels much more powerfully, reducing the number of correctly guessed
+bits to $20$ for the first attack, and to $14$ for the second. 
+\subsection{Conclusion}
+This in itself demonstrates the potential for compiler-based code diversification to
+protect against side-channel attacks, which could be a promising avenue for
+greater security.
