@@ -1,5 +1,10 @@
 # Sidechannel Analysis
 
+## Week 2: Setup and simple side-channels
+
+We've taken it upon ourselves to write some documents about side-channels in our first week,
+and this week we've chosen to do some bootstrapping: we've setup several programs that exhibit side-channels (in Java and C#/mono), as well as socket communication that will be useful for catching side-channels in a unified way.
+
 ## Project Vision
 
 We will be doing an evaluation of side-channels in runtime systems. Side-channels are present when information about the internal workings of a system can be inferred from measuring certain, often seemingly irrelevant, properties. These properties are usually inherently tied to either the hardware or the runtime, such as the execution time of the program or amount of memory used. We will be implementing ten programs with runtime-specific side channel vulnerabilities on different managed runtimes and analyzing the results. We will quantify any differences in side-channel strength depending on the language and runtime. We will estimate and validate which language or runtime traits caused the differences to occur, and actively search for a way to patch these, if possible.
