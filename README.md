@@ -1,4 +1,4 @@
-# Sidechannel Analysis
+# Side-channel Analysis
 
 ## Week 2: Setup and simple side-channels
 
