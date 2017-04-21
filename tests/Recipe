@@ -1,0 +1,19 @@
+
+define :compiler => "g++"
+define :flags => "-Wall -Wextra -std=c++11"
+define :linker => "-lX11 -lglog"
+
+define :sources => "src"
+define :includes => "include"
+
+define :executable => "mwm"
+
+require_directory sources
+require_directory includes
+
+when_modifying "\\.cpp" do
+	print "-- Source has been changed"
+	run "#{compiler} #{flags} -I#{includes} -o ./#{File.basename(target, ".*")} #{sources}/*.cpp #{linker}"
+	print "-- Build complete"
+end
+
