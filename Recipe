@@ -2,11 +2,13 @@
 define :docs => "documents"
 define :exps => "experiments"
 define :notes => "notes"
+define :tests => "tests"
 
 first_time = doesnt_exist? docs
 require_directory docs
 require_directory exps
 require_directory notes
+require_directory tests
 
 when_modifying ".tex" do
     if File.read(path).include? "\\begin{document}"
