@@ -1,0 +1,64 @@
+\documentclass{article}
+
+\begin{document}
+
+\section{Mutual Information} 
+
+The mutual information between two random variables is a measure of the mutual
+dependence between the two variables. It tells us how much information, in
+bits, we learn about one random varaible by observing the other. In the context
+of side channel analysis, mutual information can be used to quantify how much
+information we gain about the secret data through our observable channel. 
+
+We assume our system has probabilistic behavior. Each trial run of the system
+results in some secret value $x \in \textbf{X}$ occuring from some probability
+distribution $X$ and some observable $y \in \textit{Y}$ occuring from some
+probability distribution $Y$. 
+
+Mutual information is given by the equation
+
+\begin{equation}
+I(X,Y)  = \sum_{x \in X, y \in Y} = p(x,y) log \left(\frac{p(x,y)}{p(x)p(y)}\right)
+\end{equation}
+
+The probability of the secret being $x$ and an observer observing $y$ is the
+joint probability $p(x,y)$. This value along with $p(x)$ and $p(y)$ can be
+estimated experimentally through trial runs of the system. Assuming that our
+trial runs are independent and identically distributed, we can estimate the
+above probabilities and in the case where both the secret and the observable
+are discrete variables, we can use the given equation to estimate the murual
+information between them. How accuate teh estimate depends on the number of
+trials. Chothia et al. describe a method to determine the necessary number of
+trial runs to estimate the mutual information within some confidence interval
+in their work on LeakWatch \cite{leakwatch}.
+
+The above method centers on the assumption that both random variables are
+discrete. In our case; however, the observable is often a continuous variable,
+such as execution time. Regardless of how many trial runs we make, there will
+still be an infinite number of possible execution times that are never
+observed. We need a way to measure mutual information when one random variable
+is discrete and the other continuous. Hu et al \cite{continuous}. detail such a
+method as does Ross \cite{continuous2}.
+
+
+\begin{thebibliography}{9}
+
+ 
+\bibitem{leakwatch} 
+Chothia, Tom, Yusuke Kawamoto, and Chris Novakovic. 
+"Leakwatch: Estimating information leakage from java programs." 
+European Symposium on Research in Computer Security. Springer International Publishing, 2014.
+
+\bibitem{continuous}
+Hu, Qinghua, et al. 
+"Measuring relevance between discrete and continuous features based on neighborhood mutual information."
+ Expert Systems with Applications 38.9 (2011): 10737-10750.
+ 
+ \bibitem{continuous2}
+ Ross, Brian C. 
+ "Mutual information between discrete and continuous data sets."
+  PloS one 9.2 (2014): e87357.
+
+ 
+ \end{thebibliography}
+ \end{document}
