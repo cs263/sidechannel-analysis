@@ -1,0 +1,54 @@
+[0m[[0mdebug[0m] [0m[naha] [0m
+[0m[[0mdebug[0m] [0m[naha] Initial source changes: [0m
+[0m[[0mdebug[0m] [0m[naha] 	removed:Set()[0m
+[0m[[0mdebug[0m] [0m[naha] 	added: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] 	modified: Set(/home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/kernel.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/definitions.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/main.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/socks.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidated products: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] External API changes: API Changes: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] Modified binary dependencies: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] Initial directly invalidated sources: Set(/home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/kernel.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/definitions.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/main.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/socks.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] [0m
+[0m[[0mdebug[0m] [0m[naha] Sources indirectly invalidated by:[0m
+[0m[[0mdebug[0m] [0m[naha] 	product: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] 	binary dep: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] 	external source: Set()[0m
+[0m[[0mdebug[0m] [0mAll initially invalidated sources: Set(/home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/kernel.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/definitions.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/main.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/socks.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] Initial set of included nodes: Set(/home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/kernel.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/definitions.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/main.scala, /home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/socks.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] Recompiling all 4 sources: invalidated sources (4) exceeded 50.0% of all sources[0m
+[0m[[0minfo[0m] [0mCompiling 4 Scala sources to /home/mika/sidechannel-analysis/experiments/tools/conflow/target/scala-2.12/classes...[0m
+[0m[[0mdebug[0m] [0mGetting org.scala-sbt:compiler-interface:0.13.15:component from component compiler for Scala 2.12.1[0m
+[0m[[0mdebug[0m] [0mGetting org.scala-sbt:compiler-interface:0.13.15:component from component compiler for Scala 2.12.1[0m
+[0m[[0mdebug[0m] [0mRunning cached compiler 5e86f921, interfacing (CompilerInterface) with Scala compiler version 2.12.1[0m
+[0m[[0mdebug[0m] [0mCalling Scala compiler with arguments  (CompilerInterface):[0m
+[0m[[0mdebug[0m] [0m	-bootclasspath[0m
+[0m[[0mdebug[0m] [0m	/home/mika/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.12.1.jar[0m
+[0m[[0mdebug[0m] [0m	-classpath[0m
+[0m[[0mdebug[0m] [0m	/home/mika/sidechannel-analysis/experiments/tools/conflow/target/scala-2.12/classes:/home/mika/sidechannel-analysis/experiments/tools/conflow/lib/javassist-3.20.0-GA.jar[0m
+[0m[[31merror[0m] [0m/home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/kernel.scala:26: not found: type T[0m
+[0m[[31merror[0m] [0m		abstract class Context[P <: Contextual, N <: Contextual](t: T) extends Contextual {[0m
+[0m[[31merror[0m] [0m		                                                            ^[0m
+[0m[[31merror[0m] [0m/home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/kernel.scala:42: type mismatch;[0m
+[0m[[31merror[0m] [0m found   : javassist.CtMethod[0m
+[0m[[31merror[0m] [0m required: javassist.CtClass[0m
+[0m[[31merror[0m] [0m				case Success(meth) => Some(meth)[0m
+[0m[[31merror[0m] [0m				                           ^[0m
+[0m[[31merror[0m] [0m/home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/kernel.scala:56: no arguments allowed for nullary method getClass: ()Class[_ <: conflow.Kernel.LoaderContext][0m
+[0m[[31merror[0m] [0m				getClass(msg) match {[0m
+[0m[[31merror[0m] [0m				         ^[0m
+[0m[[31merror[0m] [0m/home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/kernel.scala:57: type mismatch;[0m
+[0m[[31merror[0m] [0m found   : Any[0m
+[0m[[31merror[0m] [0m required: javassist.CtClass[0m
+[0m[[31merror[0m] [0m					case Some(klass) => Success(ClassContext(this, klass))[0m
+[0m[[31merror[0m] [0m					                                               ^[0m
+[0m[[31merror[0m] [0m/home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/kernel.scala:64: constructor cannot be instantiated to expected type;[0m
+[0m[[31merror[0m] [0m found   : (T1, T2)[0m
+[0m[[31merror[0m] [0m required: Array[String][0m
+[0m[[31merror[0m] [0m				val (name, desc) = msg.split(":")[0m
+[0m[[31merror[0m] [0m				    ^[0m
+[0m[[31merror[0m] [0m/home/mika/sidechannel-analysis/experiments/tools/conflow/src/main/scala/kernel.scala:66: not enough arguments for method apply: (c: conflow.Kernel.ClassContext, m: javassist.CtMethod)conflow.Kernel.MethodContext in object MethodContext.[0m
+[0m[[31merror[0m] [0mUnspecified value parameter m.[0m
+[0m[[31merror[0m] [0m					case Some(meth) => Success(MethodContext(meth))[0m
+[0m[[31merror[0m] [0m					                                        ^[0m
+[0m[[31merror[0m] [0m6 errors found[0m
+[0m[[0mdebug[0m] [0mCompilation failed (CompilerInterface)[0m
+[0m[[31merror[0m] [0m(compile:[31mcompileIncremental[0m) Compilation failed[0m
