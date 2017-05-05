@@ -6,10 +6,11 @@ package conflow {
 
 		def main(args: Array[String]): Unit = {
 			// add library to Kernel
-			Kernel.append("lib/javassist-3.20.0-GA.jar")
+			Kernel.append("tests/PasswordInsecure.jar")
+			Kernel.Point("tests.password.PasswordInsecure", "main", "([Ljava/lang/String;)V")
 
 			// send to channel helloworld
-			"helloworld" << Kernel("javassist.CtClass")
+			//"helloworld" << Kernel("javassist.CtClass")
 		}
 	}
 }
