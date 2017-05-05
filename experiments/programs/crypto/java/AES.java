@@ -15,18 +15,18 @@ public class AES{
 
 	public static byte[] encrypt(byte[] plainText, byte[] encryption_key) throws Exception{ 
 		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        SecretKeySpec key = new SecretKeySpec(encryption_key, "AES");
-        System.out.println("Starting encryption");
-        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-        return cipher.doFinal(plainText);
+        	SecretKeySpec key = new SecretKeySpec(encryption_key, "AES");
+        	System.out.println("Starting encryption");
+        	cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
+        	return cipher.doFinal(plainText);
 	}
 
 	public static byte[] decrypt(byte[] cipherText, byte[] encryption_key) throws Exception {
 		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        SecretKeySpec key = new SecretKeySpec(encryption_key, "AES");
-        cipher.init(Cipher.DECRYPT_MODE, key,new IvParameterSpec(iv));
-        System.out.println("Statring decryption");
-        return cipher.doFinal(cipherText);
+        	SecretKeySpec key = new SecretKeySpec(encryption_key, "AES");
+        	cipher.init(Cipher.DECRYPT_MODE, key,new IvParameterSpec(iv));
+        	System.out.println("Statring decryption");
+        	return cipher.doFinal(cipherText);
 	}
 
 	public static void main(String[] args) throws Exception{
@@ -44,9 +44,8 @@ public class AES{
 			byte[] newPlainText = decrypt(cipherText, key_to_bytes);
 			System.out.println("Finished decryption: ");
 			System.out.println(new String(newPlainText, "UTF8"));
-		}
-		catch (Exception e) {
-            e.printStackTrace();
-        }
+		} catch (Exception e) {
+            		e.printStackTrace();
+        	}
 	}
 }
