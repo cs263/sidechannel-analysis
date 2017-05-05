@@ -1,0 +1,44 @@
+\documentclass[sigconf]{acmart}
+
+\usepackage{booktabs} % For formal tables
+
+
+% Copyright
+%\setcopyright{none}
+%\setcopyright{acmcopyright}
+%\setcopyright{acmlicensed}
+\setcopyright{rightsretained}
+%\setcopyright{usgov}
+%\setcopyright{usgovmixed}
+%\setcopyright{cagov}
+%\setcopyright{cagovmixed}
+
+%Conference
+\acmConference[Conference Name 2017]{ACM Short Name}{Month}{Location City, State, Country} 
+\acmYear{2017}
+\copyrightyear{2017}
+
+
+\begin{document}
+\newcommand\todo[1]{\textcolor{red}{#1}}
+
+\title{Path Cost Analysis for Side Channel Detection}
+
+
+\begin{abstract}
+Side channel vulnerabilites have been increasingly demonstrated as a practical threat to the confidentiality of private user information. Being able to statically detect side channel vulnerabilites is a key challenge in current side channel analysis research. We introduce a new technique, path cost analysis (PCA), for the detection of side channels. Path cost analysis assigns a symbolic cost expression to every node and every back edge of a method's control flow graph which gives an over-approximation for all possible observable values at that node. Queries to a satisfiability solver on the maximum distance between specific pairs of nodes allows us to detect the presence of imbalanced paths through the control flow graph. When combined with taint analysis, we are able to answer the following question -- do there exist a pair of paths in the method's control flow graph, differing only on branch conditions influenced by the secret, which differ in observable value by more than some given threshold. In fact, we are able to answer the more general question -- what sets of secret-sensitive conditional statements introduce a side channel detectable given some noise parameter. We extend this approach to an interprocedural analysis, resulting in a sound over-approximation of the number of true side channels in the program. Greater precision can be obtained by combining our method with predicate abstraction or symbolic execution to determine whether a given path through the control flow graph is feasible. We propose evaluating our method on a set of sizeable java server-client applications. 
+\end{abstract}
+
+\keywords{computer security, side channel analysis, static analysis}
+
+
+\maketitle
+\input{intro}
+\input{outline}
+\input{improvements}
+\input{evaluation}
+\input{related_work}
+%\bibliographystyle{ACM-Reference-Format}
+\bibliography{biblio}
+
+\end{document}
