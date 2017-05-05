@@ -94,7 +94,7 @@ package conflow {
 				("ldc2_w" → indexAsWord),
 				("lload" → indexAsByte),
 				("lookupswitch" → ((code: CodeIterator, prePadding: Int) => {
-					val index = ((prePadding / 4) + 1) * 4 // todo: should be offset from start of method with multiple of 4
+					val index = ((prePadding / 4) + 1) * 4
 					val defaults = code.s32bitAt(index)
 					val npairs = code.s32bitAt(index + 4)
 					Seq(defaults, npairs) ++ (0 until npairs).map(x => code.s32bitAt((index + 8) + 4 * x))
@@ -109,7 +109,8 @@ package conflow {
 				("ret" → indexAsByte),
 				("sipush" → indexAsWord),
 				("tableswitch" → ((code: CodeIterator, prePadding: Int) => {
-					val index = ((prePadding / 4) + 1) * 4 // todo: should be offset from start of method with multiple of 4
+
+					val index = ((prePadding / 4) + 1) * 4
 					val defaults = code.s32bitAt(index)
 					val lowbyte = code.s32bitAt(index + 4)
 					val highbyte = code.s32bitAt(index + 8)
@@ -118,6 +119,10 @@ package conflow {
 				})),
 				("wide" → ((code: CodeIterator, index: Int) => throw new Exception("Wide not implemented")))
 			)
+
+			val usesConstPool = Set("ldc", "ldc_w", "ldc2_w", "multianewarray", "new", "putfield", 
+				"putstatic", "anewarray", "checkcast", "getfield", "getstatic", "instanceof", 
+				"invokedynamic", "invokeinterface", "invokevirtual", "invokestatic", "invokespecial")
 
 			val code = m.getMethodInfo.getCodeAttribute.iterator
 			while(code.hasNext) {
@@ -137,6 +142,5 @@ package conflow {
 					m <- fetchMethod(c, method, desc)
 				} yield Point(c, m)
 		}
-
 	}
 }
