@@ -17,7 +17,7 @@ package conflow {
 		override def toString = throw new Exception("Failed description of instruction")
 	}
 
-	object Kernel {
+	package object Kernel {
 		import javassist._
 		import javassist.bytecode._
 		import scala.util.{ Success, Failure, Try }
@@ -31,7 +31,6 @@ package conflow {
 		def path = classPath.toString
 
 		private[this] def fetchClass(name: String) = {
-			println("Fetching class...")
 			Try(classPool.get(name)) match {
 				case Success(c) => Option(c)
 				case Failure(e) =>
@@ -41,7 +40,6 @@ package conflow {
 		}
 
 		private[this] def fetchMethod(ct: CtClass, name: String, desc: String) = {
-			println("Fetching method...")
 			Try(ct.getMethod(name, desc)) match {
 				case Success(m) => Option(m)
 				case Failure(e) =>
@@ -182,26 +180,28 @@ package conflow {
 			("checkcast", dope)
 		)
 
-		case class CodePoint(index: Int, opcode: Int, mnemonic: String, 
+		case class CodePoint(index: Int, mnemonic: String, 
 			args: Seq[Int], constPoolEntry: Option[conflow.Descriptor]) {
 			
 			override def toString = {
 				var result = ""
-				result += s"${index} ${mnemonic} "
+				result += s"[ ${index} ] ${mnemonic} "
 				if(!args.isEmpty)
 					result += s"${args} "
 
 				if(constPoolEntry.isDefined)
 					result += s"${constPoolEntry.get}"
 
-				result
+				result.trim
 			}
 		}
 
 		case class Instructions(c: CtClass, m: CtMethod) {
-			println(s"Point ${c.getName}#${m.getName} made...")
+			println(s"Entry point: ${c.getName}#${m.getName}...")
 
 			val code = m.getMethodInfo.getCodeAttribute.iterator
+			var instructions = Seq[CodePoint]()
+
 			while(code.hasNext) {
 				val index = code.next
 				val opcode = code.byteAt(index)
@@ -211,9 +211,29 @@ package conflow {
 					Some(usesConstPool(mnemonic)(c.getClassFile.getConstPool, (args.get)(0)))
 				else None
 
-				val codepoint = CodePoint(index, opcode, mnemonic, args.getOrElse(Seq()), fromConstPool)
-				println(codepoint)
+				val codepoint = CodePoint(index, mnemonic, args.getOrElse(Seq()), fromConstPool)
+				instructions = instructions :+ codepoint
 			}
+
+			val graph = graphs.ProgramGraph.from(instructions)
+
+			val gotosFixed = (graph: graphs.ProgramGraph[Unit]) => {
+				graph.mapEdges { case (old, node) => node match {
+					case CodePoint(_, "goto", Seq(jump), _) => Set((graph.nodes(jump), ()))
+					case CodePoint(_, "goto_w", Seq(jump), _) => Set((graph.nodes(jump), ()))
+					case _ => old
+				} }
+			}
+
+			val ifsFixed = (graph: graphs.ProgramGraph[Unit]) => {
+				graph.mapEdges { case (old, node) => node match {
+					case CodePoint(_, op, Seq(jump), _) if op.startsWith("if") => 
+						old ++ Set((graph.nodes(jump), ()))
+					case _ => old
+				} }
+			}
+
+			println(ifsFixed(gotosFixed(graph)))
 		}
 
 		object Instructions {
