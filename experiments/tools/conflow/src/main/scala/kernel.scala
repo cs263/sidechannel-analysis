@@ -1,6 +1,23 @@
 
 package conflow {
-	object Kernel {
+	trait Descriptor
+	case class ValueDesc(value: Any) extends Descriptor {
+		override def toString = s"$value"
+	}
+
+	case class FieldDesc(itsClass: String, itsName: String, itsType: String) extends Descriptor {
+		override def toString = s"$itsClass#$itsName : $itsType"
+	}
+
+	case class MethodDesc(itsClass: String, itsName: String, itsType: String) extends Descriptor {
+		override def toString = s"$itsClass#$itsName : $itsType"		
+	}
+
+	case object FailedDesc extends Descriptor {
+		override def toString = throw new Exception("Failed description of instruction")
+	}
+
+	package object Kernel {
 		import javassist._
 		import javassist.bytecode._
 		import scala.util.{ Success, Failure, Try }
@@ -14,7 +31,6 @@ package conflow {
 		def path = classPath.toString
 
 		private[this] def fetchClass(name: String) = {
-			println("Fetching class...")
 			Try(classPool.get(name)) match {
 				case Success(c) => Option(c)
 				case Failure(e) =>
@@ -24,7 +40,6 @@ package conflow {
 		}
 
 		private[this] def fetchMethod(ct: CtClass, name: String, desc: String) = {
-			println("Fetching method...")
 			Try(ct.getMethod(name, desc)) match {
 				case Success(m) => Option(m)
 				case Failure(e) =>
@@ -34,113 +49,219 @@ package conflow {
 			}
 		}
 
-		case class Point(c: CtClass, m: CtMethod) {
-			println(s"Point ${c.getName}#${m.getName} made...")
+		val indexAsByte = (code: CodeIterator, index: Int) =>
+			Seq(code.byteAt(index))
 
-			val indexAsByte = (code: CodeIterator, index: Int) =>
-				Seq(code.byteAt(index))
+		val indexAsWord = (code: CodeIterator, index: Int) =>
+			Seq(code.u16bitAt(index))
 
-			val indexAsWord = (code: CodeIterator, index: Int) =>
-				Seq(code.u16bitAt(index))
+		val indexAsWide = (code: CodeIterator, index: Int) =>
+			Seq(code.s32bitAt(index))
 
-			val indexAsWide = (code: CodeIterator, index: Int) =>
-				Seq(code.s32bitAt(index))
+		val instructionArguments = Map[String, (CodeIterator, Int) => Seq[Int]](
+			("aload" → indexAsByte),
+			("anewarray" → indexAsWord),
+			("astore" → indexAsByte),
+			("bipush" → indexAsByte),
+			("checkcast" → indexAsWord),
+			("dload" → indexAsByte),
+			("dstore" → indexAsByte),
+			("fload" → indexAsByte),
+			("fstore" → indexAsByte),
+			("getfield" → indexAsWord),
+			("getstatic" → indexAsWord),
+			("goto" → indexAsWord),
+			("goto_w" → indexAsWide),
+			("if_acmpeq" → indexAsWord),
+			("if_acmpne" → indexAsWord),
+			("if_icmpeq" → indexAsWord),
+			("if_icmpne" → indexAsWord),
+			("if_icmplt" → indexAsWord),
+			("if_icmpge" → indexAsWord),
+			("if_icmpgt" → indexAsWord),
+			("if_icmple" → indexAsWord),
+			("ifeq" → indexAsWord),
+			("ifne" → indexAsWord),
+			("iflt" → indexAsWord),
+			("ifge" → indexAsWord),
+			("ifgt" → indexAsWord),
+			("ifle" → indexAsWord),
+			("ifnonnull" → indexAsWord),
+			("ifnull" → indexAsWord),
+			("iinc" → ((code: CodeIterator, index: Int) => {
+				indexAsByte(code, index) ++ Seq(code.signedByteAt(index + 1))
+			})),
+			("iload" → indexAsByte),
+			("instanceof" → indexAsWord),
+			("invokedynamic" → ((code: CodeIterator, index: Int) =>
+				indexAsByte(code, index) ++ Seq(0, 0))),
+			("invokeinterface" → ((code: CodeIterator, index: Int) =>
+				indexAsWord(code, index) ++ indexAsByte(code, index + 2) ++ Seq(0))),
+			("invokespecial" → indexAsWord),
+			("invokestatic" → indexAsWord),
+			("invokevirtual" → indexAsWord),
+			("istore" → indexAsByte),
+			("jsr_w" → indexAsWide),
+			("ldc" → indexAsByte),
+			("ldc_w" → indexAsWord),
+			("ldc2_w" → indexAsWord),
+			("lload" → indexAsByte),
+			("lookupswitch" → ((code: CodeIterator, prePadding: Int) => {
+				val index = if(prePadding % 4 == 0) prePadding else ((prePadding / 4) + 1) * 4
+				val defaults = code.s32bitAt(index)
+				val npairs = code.s32bitAt(index + 4)
+				Seq(defaults, npairs) ++ (0 to npairs + 1).map(x => code.s32bitAt((index + 8) + 4 * x))
+			})),
+			("lstore" → indexAsByte),
+			("multianewarray" → ((code: CodeIterator, index: Int) =>
+				indexAsWord(code, index) ++ indexAsByte(code, index + 2) ++ Seq(0))),
+			("new" → indexAsWord),
+			("newarray" → indexAsByte),
+			("putfield" → indexAsWord),
+			("putstatic" → indexAsWord),
+			("ret" → indexAsByte),
+			("sipush" → indexAsWord),
+			("tableswitch" → ((code: CodeIterator, prePadding: Int) => {
+				val index = if(prePadding % 4 == 0) prePadding else ((prePadding / 4) + 1) * 4
+				val defaults = code.s32bitAt(index)
+				val lowbyte = code.s32bitAt(index + 4)
+				val highbyte = code.s32bitAt(index + 8)
+				val jumps = highbyte - lowbyte + 1
+				Seq(defaults, lowbyte, highbyte) ++ (0 to jumps + 1).map(x => code.s32bitAt((index + 8) + 4 * x))
+			})),
+			("wide" → ((code: CodeIterator, index: Int) => throw new Exception("Wide not implemented")))
+		)
 
-			val instructionArguments = Map(
-				("aload" → indexAsByte),
-				("anewarray" → indexAsWord),
-				("astore" → indexAsByte),
-				("bipush" → indexAsWord),
-				("checkcast" → indexAsWord),
-				("dload" → indexAsByte),
-				("dstore" → indexAsByte),
-				("fload" → indexAsByte),
-				("fstore" → indexAsByte),
-				("getfield" → indexAsWord),
-				("getstatic" → indexAsWord),
-				("goto" → indexAsWord),
-				("goto_w" → indexAsWide),
-				("if_acmpeq" → indexAsWord),
-				("if_acmpne" → indexAsWord),
-				("if_icmpeq" → indexAsWord),
-				("if_icmpne" → indexAsWord),
-				("if_icmplt" → indexAsWord),
-				("if_icmpge" → indexAsWord),
-				("if_icmpgt" → indexAsWord),
-				("if_icmple" → indexAsWord),
-				("ifeq" → indexAsWord),
-				("ifne" → indexAsWord),
-				("iflt" → indexAsWord),
-				("ifge" → indexAsWord),
-				("ifgt" → indexAsWord),
-				("ifle" → indexAsWord),
-				("ifnonnull" → indexAsWord),
-				("ifnull" → indexAsWord),
-				("iinc" → ((code: CodeIterator, index: Int) =>
-					Seq(indexAsByte(code, index), code.signedByteAt(index + 1)))),
-				("iload" → indexAsByte),
-				("instanceof" → indexAsWord),
-				("invokedynamic" → ((code: CodeIterator, index: Int) =>
-					Seq(indexAsByte(code, index), 0, 0))),
-				("invokeinterface" → ((code: CodeIterator, index: Int) =>
-					Seq(indexAsWord(code, index), indexAsByte(code, index + 2), 0))),
-				("invokespecial" → indexAsWord),
-				("invokestatic" → indexAsWord),
-				("invokevirtual" → indexAsWord),
-				("istore" → indexAsByte),
-				("jsr_w" → indexAsWide),
-				("ldc" → indexAsByte),
-				("ldc_w" → indexAsWord),
-				("ldc2_w" → indexAsWord),
-				("lload" → indexAsByte),
-				("lookupswitch" → ((code: CodeIterator, prePadding: Int) => {
-					val index = ((prePadding / 4) + 1) * 4
-					val defaults = code.s32bitAt(index)
-					val npairs = code.s32bitAt(index + 4)
-					Seq(defaults, npairs) ++ (0 until npairs).map(x => code.s32bitAt((index + 8) + 4 * x))
-				})),
-				("lstore" → indexAsByte),
-				("multianewarray" → ((code: CodeIterator, index: Int) =>
-					Seq(indexAsWord(code, index), indexAsByte(code, index + 2), 0))),
-				("new" → indexAsWord),
-				("newarray" → indexAsByte),
-				("putfield" → indexAsWord),
-				("putstatic" → indexAsWord),
-				("ret" → indexAsByte),
-				("sipush" → indexAsWord),
-				("tableswitch" → ((code: CodeIterator, prePadding: Int) => {
+		type ConstPoolDescriptor = (ConstPool, Int) => conflow.Descriptor
 
-					val index = ((prePadding / 4) + 1) * 4
-					val defaults = code.s32bitAt(index)
-					val lowbyte = code.s32bitAt(index + 4)
-					val highbyte = code.s32bitAt(index + 8)
-					val jumps = highbyte - lowbyte + 1
-					Seq(defaults, lowbyte, highbyte) ++ (0 until jumps).map(x => code.s32bitAt((index + 8) + 4 * x))
-				})),
-				("wide" → ((code: CodeIterator, index: Int) => throw new Exception("Wide not implemented")))
-			)
+		val dope: ConstPoolDescriptor = (cp: ConstPool, arg: Int) => FailedDesc
 
-			val usesConstPool = Set("ldc", "ldc_w", "ldc2_w", "multianewarray", "new", "putfield", 
-				"putstatic", "anewarray", "checkcast", "getfield", "getstatic", "instanceof", 
-				"invokedynamic", "invokeinterface", "invokevirtual", "invokestatic", "invokespecial")
+		val fetchField: ConstPoolDescriptor = (cp: ConstPool, arg: Int) => {
+			val className = cp.getFieldrefClassName(arg)
+			val fname = cp.getFieldrefName(arg)
+			val ftype = cp.getFieldrefType(arg)
+			FieldDesc(className, fname, ftype)
+		}
 
-			val code = m.getMethodInfo.getCodeAttribute.iterator
-			while(code.hasNext) {
-				val index = code.next
-				val lookahead = code.lookAhead
-				val opcode = code.byteAt(index)
-				val mnemonic = Mnemonic.OPCODE(opcode)
-				val args = instructionArguments.get(mnemonic).map(fn => fn(code, index + 1))
-				println(s"${index} ${mnemonic} ${args}")
+		val fetchMethod: ConstPoolDescriptor = (cp: ConstPool, arg: Int) => {
+			val className = cp.getMethodrefClassName(arg)
+			val mname = cp.getMethodrefName(arg)
+			val mtype = cp.getMethodrefType(arg)
+			MethodDesc(className, mname, mtype)
+		}
+
+		val fetchInterfaceMethod: ConstPoolDescriptor = (cp: ConstPool, arg: Int) => {
+			val className = cp.getInterfaceMethodrefClassName(arg)
+			val mname = cp.getInterfaceMethodrefName(arg)
+			val mtype = cp.getInterfaceMethodrefType(arg)
+			MethodDesc(className, mname, mtype)
+		}
+
+		val usesConstPool = Map[String, ConstPoolDescriptor](
+			("ldc", (cp: ConstPool, arg: Int) => ValueDesc(cp.getLdcValue(arg))), 
+			("ldc_w", (cp: ConstPool, arg: Int) => ValueDesc(cp.getLdcValue(arg))), 
+			("ldc2_w", (cp: ConstPool, arg: Int) => ValueDesc(cp.getLdcValue(arg))), 
+			("new", (cp: ConstPool, arg: Int) => ValueDesc(cp.getClassInfo(arg))), 
+
+			("putfield", fetchField), 
+			("putstatic", fetchField), 
+			("getfield", fetchField), 
+			("getstatic", fetchField), 
+
+			("invokedynamic", fetchMethod), 
+			("invokeinterface", fetchInterfaceMethod), 
+			("invokevirtual", fetchMethod), 
+			("invokestatic", fetchMethod), 
+			("invokespecial", fetchMethod),
+
+			("multianewarray", dope), 
+			("instanceof", dope), 
+			("anewarray", dope), 
+			("checkcast", dope)
+		)
+
+		case class CodePoint(val index: Int, val mnemonic: String, 
+			val args: Seq[Int], val constPoolEntry: Option[conflow.Descriptor]) {
+			
+			override def toString = {
+				var result = ""
+				result += s"[ ${index} ] ${mnemonic} "
+				if(!args.isEmpty)
+					result += s"${args} "
+
+				if(constPoolEntry.isDefined)
+					result += s"${constPoolEntry.get}"
+
+				result.trim
 			}
 		}
 
-		object Point {
-			def apply(klass: String, method: String, desc: String): Option[Point] = 
+		case class Instructions(c: CtClass, m: CtMethod) {
+			println(s"Entry point: ${c.getName}#${m.getName}...")
+
+			val code = m.getMethodInfo.getCodeAttribute.iterator
+			var instructions = Seq[CodePoint]()
+
+			while(code.hasNext) {
+				val index = code.next
+				val opcode = code.byteAt(index)
+				val mnemonic = Mnemonic.OPCODE(opcode)
+				val args = instructionArguments.get(mnemonic).map(fn => fn(code, index + 1))
+				val fromConstPool = if(usesConstPool contains mnemonic)
+					Some(usesConstPool(mnemonic)(c.getClassFile.getConstPool, (args.get)(0)))
+				else None
+
+				val codepoint = CodePoint(index, mnemonic, args.getOrElse(Seq()), fromConstPool)
+				instructions = instructions :+ codepoint
+			}
+
+			val graph = graphs.ProgramGraph.from(instructions)
+
+			val gotosFixed = (graph: graphs.ProgramGraph[Unit]) => 
+				graph.mapEdges { 
+					case (old, node) => node match {
+						case CodePoint(_, "goto", Seq(jump), _) => Set((graph.get(jump), ()))
+						case CodePoint(_, "goto_w", Seq(jump), _) => Set((graph.get(jump), ()))
+						case _ => old
+					} 
+				}
+			
+
+			val ifsFixed = (graph: graphs.ProgramGraph[Unit]) =>
+				graph.mapEdges { 
+					case (old, node) => node match {
+						case CodePoint(_, op, Seq(jump), _) if op.startsWith("if") => 
+							old ++ Set((graph.get(jump), ()))
+						case _ => old
+				} 
+			}
+
+/*			val switchFixed = (graph: graphs.ProgramGraph[Unit]) =>
+				graph.mapEdges {
+					case (old, node) => node match {
+						case cp@CodePoint(index, "lookupswitch", args@Seq(default, npairs, pairIndices@_*), _) =>							
+//							val pairs: Set[(CodePoint, Unit)] = (pairIndices zip pairIndices.drop(1))
+//								.zipWithIndex.filter(_._2 % 2 == 0).map { _._1 }
+//								.map { case (x, y) => (graph.get(index + y), ()) }.toSet
+
+//							Set((graph.get(index + default), ())) ++ pairs
+
+							val pairs: Set[(CodePoint, Unit)] = (pairIndices zip pairIndices.drop(1))
+								.zipWithIndex.filter(_)
+							old
+						case _ => old
+					}
+				}
+*/			
+			println(ifsFixed(gotosFixed(graph)))
+		}
+
+		object Instructions {
+			def apply(klass: String, method: String, desc: String): Option[Instructions] = 
 				for {
 					c <- fetchClass(klass)
 					m <- fetchMethod(c, method, desc)
-				} yield Point(c, m)
+				} yield Instructions(c, m)
 		}
 	}
 }
