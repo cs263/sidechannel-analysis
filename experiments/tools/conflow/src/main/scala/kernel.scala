@@ -62,7 +62,7 @@ package conflow {
 			("aload" → indexAsByte),
 			("anewarray" → indexAsWord),
 			("astore" → indexAsByte),
-			("bipush" → indexAsWord),
+			("bipush" → indexAsByte),
 			("checkcast" → indexAsWord),
 			("dload" → indexAsByte),
 			("dstore" → indexAsByte),
@@ -107,10 +107,10 @@ package conflow {
 			("ldc2_w" → indexAsWord),
 			("lload" → indexAsByte),
 			("lookupswitch" → ((code: CodeIterator, prePadding: Int) => {
-				val index = ((prePadding / 4) + 1) * 4
+				val index = if(prePadding % 4 == 0) prePadding else ((prePadding / 4) + 1) * 4
 				val defaults = code.s32bitAt(index)
 				val npairs = code.s32bitAt(index + 4)
-				Seq(defaults, npairs) ++ (0 until npairs).map(x => code.s32bitAt((index + 8) + 4 * x))
+				Seq(defaults, npairs) ++ (0 to npairs + 1).map(x => code.s32bitAt((index + 8) + 4 * x))
 			})),
 			("lstore" → indexAsByte),
 			("multianewarray" → ((code: CodeIterator, index: Int) =>
@@ -122,12 +122,12 @@ package conflow {
 			("ret" → indexAsByte),
 			("sipush" → indexAsWord),
 			("tableswitch" → ((code: CodeIterator, prePadding: Int) => {
-				val index = ((prePadding / 4) + 1) * 4
+				val index = if(prePadding % 4 == 0) prePadding else ((prePadding / 4) + 1) * 4
 				val defaults = code.s32bitAt(index)
 				val lowbyte = code.s32bitAt(index + 4)
 				val highbyte = code.s32bitAt(index + 8)
 				val jumps = highbyte - lowbyte + 1
-				Seq(defaults, lowbyte, highbyte) ++ (0 until jumps).map(x => code.s32bitAt((index + 8) + 4 * x))
+				Seq(defaults, lowbyte, highbyte) ++ (0 to jumps + 1).map(x => code.s32bitAt((index + 8) + 4 * x))
 			})),
 			("wide" → ((code: CodeIterator, index: Int) => throw new Exception("Wide not implemented")))
 		)
@@ -180,8 +180,8 @@ package conflow {
 			("checkcast", dope)
 		)
 
-		case class CodePoint(index: Int, mnemonic: String, 
-			args: Seq[Int], constPoolEntry: Option[conflow.Descriptor]) {
+		case class CodePoint(val index: Int, val mnemonic: String, 
+			val args: Seq[Int], val constPoolEntry: Option[conflow.Descriptor]) {
 			
 			override def toString = {
 				var result = ""
@@ -217,22 +217,42 @@ package conflow {
 
 			val graph = graphs.ProgramGraph.from(instructions)
 
-			val gotosFixed = (graph: graphs.ProgramGraph[Unit]) => {
-				graph.mapEdges { case (old, node) => node match {
-					case CodePoint(_, "goto", Seq(jump), _) => Set((graph.nodes(jump), ()))
-					case CodePoint(_, "goto_w", Seq(jump), _) => Set((graph.nodes(jump), ()))
-					case _ => old
-				} }
+			val gotosFixed = (graph: graphs.ProgramGraph[Unit]) => 
+				graph.mapEdges { 
+					case (old, node) => node match {
+						case CodePoint(_, "goto", Seq(jump), _) => Set((graph.get(jump), ()))
+						case CodePoint(_, "goto_w", Seq(jump), _) => Set((graph.get(jump), ()))
+						case _ => old
+					} 
+				}
+			
+
+			val ifsFixed = (graph: graphs.ProgramGraph[Unit]) =>
+				graph.mapEdges { 
+					case (old, node) => node match {
+						case CodePoint(_, op, Seq(jump), _) if op.startsWith("if") => 
+							old ++ Set((graph.get(jump), ()))
+						case _ => old
+				} 
 			}
 
-			val ifsFixed = (graph: graphs.ProgramGraph[Unit]) => {
-				graph.mapEdges { case (old, node) => node match {
-					case CodePoint(_, op, Seq(jump), _) if op.startsWith("if") => 
-						old ++ Set((graph.nodes(jump), ()))
-					case _ => old
-				} }
-			}
+/*			val switchFixed = (graph: graphs.ProgramGraph[Unit]) =>
+				graph.mapEdges {
+					case (old, node) => node match {
+						case cp@CodePoint(index, "lookupswitch", args@Seq(default, npairs, pairIndices@_*), _) =>							
+//							val pairs: Set[(CodePoint, Unit)] = (pairIndices zip pairIndices.drop(1))
+//								.zipWithIndex.filter(_._2 % 2 == 0).map { _._1 }
+//								.map { case (x, y) => (graph.get(index + y), ()) }.toSet
 
+//							Set((graph.get(index + default), ())) ++ pairs
+
+							val pairs: Set[(CodePoint, Unit)] = (pairIndices zip pairIndices.drop(1))
+								.zipWithIndex.filter(_)
+							old
+						case _ => old
+					}
+				}
+*/			
 			println(ifsFixed(gotosFixed(graph)))
 		}
 
