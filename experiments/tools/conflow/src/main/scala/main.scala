@@ -3,13 +3,14 @@ package conflow {
 	object Main {
 		import socks._
 		import socks.Implicits._
+		import conflow.jvm._
 
 		def main(args: Array[String]): Unit = {
 			// add library to Kernel
 			Kernel.append("tests/Switches.jar")
 //			Kernel.append("tests/PasswordInsecure.jar")
-			Kernel.Instructions("Switches", "doStuff", "()V")
-
+			val cfg = Kernel.Instructions("Switches", "doStuff", "()V").get.graph
+			println(JVM(cfg))
 			// send to channel helloworld
 			//"helloworld" << Kernel("javassist.CtClass")
 		}

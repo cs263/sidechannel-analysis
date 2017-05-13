@@ -20,27 +20,19 @@ package conflow {
 					(fromNode → toNodes)
 				}.toMap
 
-				ProgramGraph[Tag](newNodes, newConnections)
-				// val oldAndNew = nodes.map { case (index, oldNode) =>
-				// 	val newNode = fn(oldNode)
-				// 	(oldNode → (index, newNode))
-				// }.toMap
-
-				// ProgramGraph[Tag](
-				// 	oldAndNew.values.toMap, 
-				// 	connections.map { case (n: CodePoint, c: Iterable[(CodePoint, Tag)]) =>
-				// 		(oldAndNew(n)._2 → (c.map { case (cp, t) => (oldAndNew(cp), t) }).toSet)
-				// 	})
+				ProgramGraph(newNodes, newConnections)
 			}
 
 			def mapEdges[T](fn: (Iterable[(CodePoint, Tag)], CodePoint) => Iterable[(CodePoint, T)]): ProgramGraph[T] =
 				ProgramGraph[T](nodes, connections.map { case (k, v) => (k → fn(v, k)) })
 
-			override def toString: String = {
+			override def toString: String =
 				nodes.mapValues { node => s"$node: ${connections.get(node).map { conn => s"\n\t$conn" }.mkString("\n")}" }.mkString("\n")
-			}
+			
 
 			def get(i: Int) = nodes(i)
+
+			def transform[U](t: ProgramGraph[Tag] => ProgramGraph[U]): graphs.ProgramGraph[U] = t(this)
 		}
 
 		object ProgramGraph {
