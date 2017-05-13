@@ -237,7 +237,7 @@ package conflow {
 				instructions = instructions :+ codepoint
 			}
 
-			lazy val cfg = graphs.ProgramGraph.from(instructions)
+			lazy val cfg = conflow.Lowlevel.graphFrom(instructions)
 
 			def graph() = cfg
 		}

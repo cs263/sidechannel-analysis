@@ -34,12 +34,5 @@ package conflow {
 
 			def transform[U](t: ProgramGraph[Tag] => ProgramGraph[U]): graphs.ProgramGraph[U] = t(this)
 		}
-
-		object ProgramGraph {
-			def from(nodes: Seq[CodePoint]) = {
- 				ProgramGraph(nodes.map { case cp@CodePoint(i, _, _, _) => (i → cp) }.toMap, 
-					(nodes zip nodes.drop(1)).map (tup => (tup._1 → Set((tup._2, stack.Implicit)))).toMap)
- 			}
-		}
 	}
 }
