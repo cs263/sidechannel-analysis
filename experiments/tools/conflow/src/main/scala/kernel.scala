@@ -1,4 +1,26 @@
 
+
+package conflow.constraints {
+	sealed trait Constraint
+
+	sealed trait Expression
+	case class Nat(n: Int) extends Expression
+	case class Var(n: Int) extends Expression
+	case class Eq(a: Expression, b: Expression) extends Expression
+	case class Lt(a: Expression, b: Expression) extends Expression
+	case class Gt(a: Expression, b: Expression) extends Expression
+	case class Le(a: Expression, b: Expression) extends Expression
+	case class Ge(a: Expression, b: Expression) extends Expression
+
+	sealed trait StackConstraint extends Constraint
+
+	package stack {
+		case object Implicit extends StackConstraint
+		case class TopIs(e: Expression) extends StackConstraint
+		case object Else extends StackConstraint
+	}
+}
+
 package conflow {
 	trait Descriptor
 	case class ValueDesc(value: Any) extends Descriptor {
@@ -196,9 +218,9 @@ package conflow {
 			}
 		}
 
-		case class Instructions(c: CtClass, m: CtMethod) {
-			println(s"Entry point: ${c.getName}#${m.getName}...")
+		import conflow.constraints._
 
+		case class Instructions(c: CtClass, m: CtMethod) {
 			val code = m.getMethodInfo.getCodeAttribute.iterator
 			var instructions = Seq[CodePoint]()
 
@@ -217,43 +239,46 @@ package conflow {
 
 			val graph = graphs.ProgramGraph.from(instructions)
 
-			val gotosFixed = (graph: graphs.ProgramGraph[Unit]) => 
-				graph.mapEdges { 
+			val gotosFixed = (graph: graphs.ProgramGraph[StackConstraint]) => 
+				graph.mapEdges {
 					case (old, node) => node match {
-						case CodePoint(_, "goto", Seq(jump), _) => Set((graph.get(jump), ()))
-						case CodePoint(_, "goto_w", Seq(jump), _) => Set((graph.get(jump), ()))
+						case CodePoint(position, "goto", Seq(jump), _) => Set((graph.get(position + jump), stack.Implicit))
+						case CodePoint(position, "goto_w", Seq(jump), _) => Set((graph.get(position + jump), stack.Implicit))
 						case _ => old
 					} 
 				}
 			
 
-			val ifsFixed = (graph: graphs.ProgramGraph[Unit]) =>
+			val ifsFixed = (graph: graphs.ProgramGraph[StackConstraint]) =>
 				graph.mapEdges { 
 					case (old, node) => node match {
-						case CodePoint(_, op, Seq(jump), _) if op.startsWith("if") => 
-							old ++ Set((graph.get(jump), ()))
+						// separate cases here
+						case CodePoint(position, op, Seq(jump), _) if op.startsWith("if") => 
+							old ++ Set((graph.get(position + jump), stack.Implicit /* TODO: FIX! */))
 						case _ => old
 				} 
 			}
 
-/*			val switchFixed = (graph: graphs.ProgramGraph[Unit]) =>
+			val switchFixed = (graph: graphs.ProgramGraph[StackConstraint]) =>
 				graph.mapEdges {
 					case (old, node) => node match {
 						case cp@CodePoint(index, "lookupswitch", args@Seq(default, npairs, pairIndices@_*), _) =>							
-//							val pairs: Set[(CodePoint, Unit)] = (pairIndices zip pairIndices.drop(1))
-//								.zipWithIndex.filter(_._2 % 2 == 0).map { _._1 }
-//								.map { case (x, y) => (graph.get(index + y), ()) }.toSet
+							val pairs = pairIndices.foldLeft((Seq[(Int, Int)](), None: Option[Int]))((all, el) => {
+								if(all._2.isDefined) {
+									(all._1 ++ Seq((all._2.get, el)), None)
+								} else {
+									(all._1, Option(el))
+								}
+							})._1.map { case (condition, offset) =>
+								(graph.get(index + offset), stack.TopIs(Nat(condition)))
+							} ++ Seq((graph.get(index + default), stack.Else))
 
-//							Set((graph.get(index + default), ())) ++ pairs
-
-							val pairs: Set[(CodePoint, Unit)] = (pairIndices zip pairIndices.drop(1))
-								.zipWithIndex.filter(_)
-							old
+							pairs
 						case _ => old
 					}
 				}
-*/			
-			println(ifsFixed(gotosFixed(graph)))
+			
+			println(switchFixed(ifsFixed(gotosFixed(graph))))
 		}
 
 		object Instructions {
