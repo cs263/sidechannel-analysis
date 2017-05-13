@@ -1,3 +1,4 @@
 .gyros/stats/
 *.class
+*.pyc
 target/
