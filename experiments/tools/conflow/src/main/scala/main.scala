@@ -9,7 +9,8 @@ package conflow {
 			Kernel.append("tests/Switches.jar")
 			Kernel.append("tests/PasswordInsecure.jar")
 
-			val cfg = Kernel.Instructions("Switches", "doStuff", "()V").get.graph
+//			val cfg = Kernel.Instructions("Switches", "doStuff", "()V").get.graph
+			val cfg = Kernel.Instructions("tests.password.PasswordInsecure", "main", "([Ljava/lang/String;)V").get.graph
 
 			println(Lowlevel(cfg))
 

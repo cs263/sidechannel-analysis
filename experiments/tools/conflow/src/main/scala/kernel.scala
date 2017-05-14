@@ -1,23 +1,91 @@
 
 
 package conflow.constraints {
-	sealed trait Constraint
+	sealed trait Constraint {
+		def reverse: Constraint = Not(this)
 
-	sealed trait Expression
+		def and(o: Constraint): AllOf = {
+			println(s"\nconcat ${this} and ${o}")
+			println(s"result: ${AllOf.from(this, o)}")
+			AllOf.from(this, o)
+		}
+		def or(o: Constraint): AnyOf = AnyOf.from(this, o)
+	}
+
+	sealed trait Expression extends Constraint
+	case object Null extends Constraint
+
 	case class Nat(n: Int) extends Expression
 	case class Var(n: Int) extends Expression
-	case class Eq(a: Expression, b: Expression) extends Expression
-	case class Lt(a: Expression, b: Expression) extends Expression
-	case class Gt(a: Expression, b: Expression) extends Expression
-	case class Le(a: Expression, b: Expression) extends Expression
-	case class Ge(a: Expression, b: Expression) extends Expression
+
+	sealed trait Operation extends Expression
+
+	case class Not(e: Constraint) extends Operation {
+		override def reverse = e
+	}
+
+	case class AllOf(es: Seq[Constraint]) extends Operation {
+		override def reverse = AnyOf(es.map { _.reverse })
+	}
+
+	object AllOf {
+		def from(a: Constraint, b: Constraint): AllOf = (a, b) match {
+			case (AllOf(x), AllOf(y)) => AllOf(x ++ y)
+			case (x, AllOf(y)) => AllOf(Seq(x) ++ y)
+			case (AllOf(x), y) => AllOf(x ++ Seq(y))
+			case (x, y) => AllOf(Seq(x, y))
+		}
+	}
+
+	case class AnyOf(es: Seq[Constraint]) extends Operation {
+		override def reverse = AllOf(es.map { _.reverse })
+	}
+
+	object AnyOf {
+		def from(a: Constraint, b: Constraint): AnyOf = (a, b) match {
+			case (AnyOf(x), AnyOf(y)) => AnyOf(x ++ y)
+			case (x, AnyOf(y)) => AnyOf(Seq(x) ++ y)
+			case (AnyOf(x), y) => AnyOf(x ++ Seq(y))
+			case (x, y) => AnyOf(Seq(x, y))
+		}
+	}
+
+	case class Eq(a: Constraint, b: Constraint) extends Operation {
+		override def reverse = Ne(a, b)
+	}
+
+	case class Ne(a: Constraint, b: Constraint) extends Operation {
+		override def reverse = Eq(a, b)
+	}
+
+	case class Lt(a: Constraint, b: Constraint) extends Operation {
+		override def reverse = Ge(a, b)
+	}
+
+	case class Gt(a: Constraint, b: Constraint) extends Operation {
+		override def reverse = Le(a, b)
+	}
+
+	case class Le(a: Constraint, b: Constraint) extends Operation {
+		override def reverse = Gt(a, b)
+	}
+
+	case class Ge(a: Constraint, b: Constraint) extends Operation {
+		override def reverse = Lt(a, b)
+	}
+
+	case class Requires(n: Int, e: Constraint) extends Constraint {
+		override def reverse = Requires(n, e.reverse)
+	}
+
+	case class IsRef(e: Constraint) extends Constraint
+	case class IsInt(e: Constraint) extends Constraint
 
 	sealed trait StackConstraint extends Constraint
 
 	package stack {
 		case object Implicit extends StackConstraint
-		case class TopIs(e: Expression) extends StackConstraint
-		case object Else extends StackConstraint
+		case class Entry(n: Int) extends StackConstraint
 	}
 }
 
