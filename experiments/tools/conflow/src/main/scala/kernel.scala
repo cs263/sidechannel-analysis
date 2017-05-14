@@ -277,7 +277,7 @@ package conflow {
 				var result = ""
 				result += s"[ ${index} ] ${mnemonic} "
 				if(!args.isEmpty)
-					result += s"${args} "
+					result += s"${args.map { _.toString }.mkString(" ")} "
 
 				if(constPoolEntry.isDefined)
 					result += s"${constPoolEntry.get}"

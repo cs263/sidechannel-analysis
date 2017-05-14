@@ -26,8 +26,16 @@ package conflow {
 			def mapEdges[T](fn: (Iterable[(CodePoint, Tag)], CodePoint) => Iterable[(CodePoint, T)]): ProgramGraph[T] =
 				ProgramGraph[T](nodes, connections.map { case (k, v) => (k → fn(v, k)) })
 
-			override def toString: String =
-				nodes.mapValues { node => s"$node: ${connections.get(node).map { conn => s"\n\t$conn" }.mkString("\n")}" }.mkString("\n")
+			override def toString: String = {
+				def connsToString(key: Int) = {
+					connections.get(nodes(key)) match {
+						case Some(s: Iterable[(CodePoint, Tag)]) => s.toSeq.map { case (cp, t) => s"\t${cp}\n\t\t${t}" }.mkString("\n")
+						case None => ""
+					}
+				}
+				nodes.keys.toList.sorted.map { key => s"${nodes(key)}\n" + connsToString(key) }.mkString("\n")
+			}
+			//	nodes.mapValues { node => s"$node: ${connections.get(node).map { conn => s"\n\t$conn" }.mkString("\n")}" }.mkString("\n")
 			
 
 			def get(i: Int) = nodes(i)
