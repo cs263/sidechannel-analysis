@@ -64,9 +64,16 @@ package conflow {
 							(graph.get(index + offset), Requires(1, Eq(IsInt(stack.Entry(1)), Nat(condition))))
 						}
 
-						pairs ++ Seq((graph.get(index + default), pairs.map { _._2 }.foldLeft(AllOf(Seq()))((old: AllOf, el: Constraint) => old.and(el.reverse))))
+						pairs ++ Seq((graph.get(index + default), 
+							pairs.map { _._2 }.foldLeft(AllOf(Seq()))((old: AllOf, el: Constraint) => old.and(el.reverse))))
 
-					/* add tableswitch here */
+					case cp@CodePoint(index, "tableswitch", args@Seq(default, low, high, offsets@_*), _) =>
+						(0 until (high - low + 1) zip offsets).map { case (i, offset) =>
+							(graph.get(index + offset), Requires(1, Eq(IsInt(stack.Entry(1)), Nat(i))))
+						} ++ Seq((graph.get(index + default), Requires(1, Eq(IsInt(stack.Entry(1)), 
+								AllOf(Seq(
+									Lt(IsInt(stack.Entry(1)), Nat(low)),
+									Gt(IsInt(stack.Entry(1)), Nat(low))))))))
 
 					case _ => old
 				}
