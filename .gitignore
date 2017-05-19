@@ -2,3 +2,4 @@
 *.class
 *.pyc
 target/
+experiments/tools/conflow/project/target/

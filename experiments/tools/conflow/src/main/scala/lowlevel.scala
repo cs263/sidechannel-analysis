@@ -5,7 +5,7 @@ package conflow {
 	import conflow.constraints._
 
 	object Lowlevel {
-		val transformGotos = (graph: ProgramGraph[Constraint]) => 
+		val transformGotos = (graph: ProgramGraph[Constraint, CodePoint]) => 
 			graph.mapEdges {
 				case (old, CodePoint(position, "goto", Seq(jump), _)) => Set((graph.get(position + jump), stack.Implicit))
 				case (old, CodePoint(position, "goto_w", Seq(jump), _)) => Set((graph.get(position + jump), stack.Implicit))
@@ -20,7 +20,7 @@ package conflow {
 				case rest => rest
 			}
 
-		val transformIfs = (graph: ProgramGraph[Constraint]) =>
+		val transformIfs = (graph: ProgramGraph[Constraint, CodePoint]) =>
 			graph.mapEdges { 
 				case (old, CodePoint(position, op, Seq(jump), _)) if op startsWith "if" =>
 					val req = op match {
@@ -50,7 +50,7 @@ package conflow {
 				case (old, _) => old
 			}
 
-		val transformSwitches = (graph: ProgramGraph[Constraint]) => 
+		val transformSwitches = (graph: ProgramGraph[Constraint, CodePoint]) => 
 			graph.mapEdges {
 				case (old, node) => node match {
 					case cp@CodePoint(index, "lookupswitch", args@Seq(default, npairs, pairIndices@_*), _) =>				
@@ -79,13 +79,12 @@ package conflow {
 				}
 			}
 
-		def apply(g: ProgramGraph[Constraint]) = 
+		def apply(g: ProgramGraph[Constraint, CodePoint]) = 
 			transformSwitches(transformIfs(transformGotos(g)))
 
 		def graphFrom(nodes: Seq[CodePoint]) = {
- 			ProgramGraph(nodes.map { case cp@CodePoint(i, _, _, _) => (i → cp) }.toMap, 
+ 			ProgramGraph[Constraint, CodePoint](nodes.map { case cp@CodePoint(i, _, _, _) => (i → cp) }.toMap, 
 				(nodes zip nodes.drop(1)).map (tup => (tup._1 → Set((tup._2, stack.Implicit)))).toMap)
 		}
-
 	}
 }

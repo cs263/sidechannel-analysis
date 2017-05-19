@@ -1,5 +1,4 @@
 
-
 package conflow.constraints {
 	sealed trait Constraint {
 		def reverse: Constraint = Not(this)
