@@ -1,5 +1,5 @@
 from graph import node, loop
-from visitors import branch_visitor, loop_visitor
+from visitors import branch_visitor, loop_visitor, nesting_visitor, acyclic_visitor
 
 class cfg:
 	def __init__(self):
@@ -64,13 +64,21 @@ class cfg:
 		visitor = branch_visitor.BranchVisitor()
 		visitor.visit(self.origin)
 		loops = visitor.getLoops()
+		index = 0 
 		for l in loops:
 			start = l[0]
 			tail = l[1]
-			loop_ = loop.loop(start, tail)
+			loop_ = loop.loop(start, tail, index)
+			index += 1 
+			start.setLoop(loop_)
+			tail.setLoop(loop_)
 			self.findBody(loop_)
 			self.loops.append(loop_)
-
+		for l in self.loops:
+			if not l.nestedLoops():
+				visitor = nesting_visitor.NestingVisitor(l)
+				visitor.visit(l.getId()[1])
+		
 
 	def findBody(self, l):
 		start, end = l.getId()
@@ -79,11 +87,26 @@ class cfg:
 		body = visitor.getBody()
 		l.setBody(body)
 
+	def annotateLoop(self, l):
+		for ll in l.nestedLoops():
+			print(ll.toString())
+			s, e = ll.getId()
+			visitor = acyclic_visitor.AcyclicVisitor(s, e)
+			visitor.visit(e)
+			ll.updateWeight()
+			print(ll.getCost().toString())
+
+
+
+
 
 
 if __name__ == "__main__":
     graph = cfg()
     graph.readFromFile("input/Cat6test.txt")
     graph.markBranching()
+    for l in graph.loops:
+    	print(l.toString())
+    graph.annotateLoop(graph.loops[0])
 
     

@@ -38,9 +38,10 @@ class LoopVariable(Expression):
 
 class BooleanVariable(Expression):
 
-	def __init__(self, var_name):
+	def __init__(self, var_name, node_):
 		self.var_name = var_name
 		self.is_secret = False
+		self.node = node_
 
 	def setSecret(self):
 		self.is_secret=True
@@ -50,3 +51,6 @@ class BooleanVariable(Expression):
 
 	def toString(self):
 		return self.var_name
+
+	def toNode(self):
+		return self.node
