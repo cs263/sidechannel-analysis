@@ -4,9 +4,18 @@ package conflow {
 		import conflow.Kernel._
 		import conflow.constraints._
 
-		case class ProgramGraph[Point, +Tag](
+		case class ProgramGraph[Node, Connection](
+			nodes: Seq[Node], 
+			connections: Map[Int, Iterable[(Int, Connection)]]) {
+
+			type TaggedVector = (Node, Connection, Node)
+
+			def 
+		}
+
+		case class ProgramGraph[+Point, +Tag](
 			nodes: Map[Int, Point], 
-			connections: Map[Point, Iterable[(Point, Tag)]]) {
+			connections: Map[Point, Iterable[(Point, Tag)]]) {			
 
 			def mapNodes(fn : Point => Point): ProgramGraph[Tag, Point] = {
 				val mappedNodes = nodes.map { case (i, x) => (x, fn(x)) }
@@ -34,6 +43,7 @@ package conflow {
 						case None => ""
 					}
 				}
+
 				nodes.keys.toList.sorted.map { key => s"${nodes(key)}\n" + connsToString(key) }.mkString("\n")
 			}
 
