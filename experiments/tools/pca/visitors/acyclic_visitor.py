@@ -36,7 +36,7 @@ class AcyclicVisitor():
 
 	def getIncoming(self, node):
 		end = None
-		if node.isLoopTail():
+		if node.isLoopTail() and node!=self.last:
 			l = node.getLoop()
 			start, end = l.getId()
 			return [start]
@@ -50,10 +50,12 @@ class AcyclicVisitor():
 		return incoming_neighbors
 
 	def getCostofNode(self, node):
-		if not node.isLoopTail():
+		if not node.isLoopHead() or node == self.target:
 			return node.getCost()
+		print("geting cost of loop")
 		l = node.getLoop()
-		return l.getCost()
+		cost_loop = l.getCost()
+		return Operation.Operation(Operation.Operator.ADD, [cost_loop, node.getCost()])
 
 	def getOutgoing(self, node):
 		outgoing_neighbors = []
@@ -70,6 +72,7 @@ class AcyclicVisitor():
 		return outgoing_neighbors
 
 	def visit(self, node):
+		print(node.getId())
 		incoming_neighbors = self.getIncoming(node)
 		self.visited.append(node)
 		if len(incoming_neighbors) == 0 or node == self.target:
@@ -90,9 +93,16 @@ class AcyclicVisitor():
 				var = Expression.BooleanVariable("b_" +str(self.index), node)
 				self.index+=1
 				node.setVariable(var)
+			print("for node " + str(node.getId()))
+			print("getting cost from " + str(incoming_neighbors[0].getId()))
 			b1 = self.getCostofNode(incoming_neighbors[0])
+			print("cost is " + str(b1.toString()))
 			term1 = Operation.Operation(Operation.Operator.TIMES, [var, b1])
+			print("getting cost from " + str(incoming_neighbors[1].getId()))
+
 			b2 = self.getCostofNode(incoming_neighbors[1])
+			print("cost is " + str(b2.toString()))
+
 			var_ = Operation.Operation(Operation.Operator.SUB, [Expression.IntConstant(1), var])
 			term2 = Operation.Operation(Operation.Operator.TIMES, [var_, b2])
 			weight = Operation.Operation(Operation.Operator.ADD, [term1, term2])

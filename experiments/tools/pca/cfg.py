@@ -50,14 +50,12 @@ class cfg:
 				target = getNodeById(target_id)
 				updateEdges(current, target)
 			elif inputs[4][0]!='f':
-				back_edges = []
 				for neighbor in inputs[4].split():
 					n = neighbor.strip('[],')
 					if n != '':
 						target_id = (method, int(n), num)
 						target = getNodeById(target_id)
 						updateEdges(current, target)
-				current.markBackEdges(back_edges)
 			past = current
 
 	def markBranching(self):
@@ -89,12 +87,14 @@ class cfg:
 
 	def annotateLoop(self, l):
 		for ll in l.nestedLoops():
-			print(ll.toString())
-			s, e = ll.getId()
-			visitor = acyclic_visitor.AcyclicVisitor(s, e)
-			visitor.visit(e)
-			ll.updateWeight()
-			print(ll.getCost().toString())
+			self.annotateLoop(ll)
+		s, e = l.getId()
+		visitor = acyclic_visitor.AcyclicVisitor(s, e)
+		print("visiting!")
+		visitor.visit(e)
+		print("done visiting")
+		l.updateWeight()
+		print(l.getCost().toString())
 
 
 

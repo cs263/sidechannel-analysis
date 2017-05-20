@@ -14,6 +14,7 @@ Operator.SUB = Operator("-", 2)
 Operator.TIMES = Operator("*", 2)
 Operator.EQ = Operator("==", 2)
 Operator.NEQ = Operator("!=", 2)
+Operator.LOOP = Operator("#", 2)
 
 
 class Operation(Expression):
@@ -29,8 +30,10 @@ class Operation(Expression):
 		return self.operands
 
 	def toString(self):
-		res = "( " + self.operator.toString() + " "
+		ops = self.operands
+		res = "(" + ops[0].toString() + " " + self.operator.toString() + " " + ops[1].toString() + ")"
+		'''res = "( " + self.operator.toString() + " "
 		for op in self.operands:
 			res += op.toString() + " "
-		res += ")"
+		res += ")"'''
 		return res

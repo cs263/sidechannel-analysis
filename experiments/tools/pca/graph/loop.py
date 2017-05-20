@@ -49,8 +49,8 @@ class loop:
 		if isinstance(expr_, Expression.BooleanVariable):
 			return loop_var_branch 
 		elif isinstance(expr_, Expression.LoopVariable):
-			print("nested loops are not yest supported")
-			return 
+			print("NESTED LOOP VARIABLE")
+			return Operation.Operation(Operation.Operator.LOOP, [loop_var, expr_])
 		else:
 			op = expr_.getOperator()
 			if op == Operation.Operator.SUB:
@@ -59,24 +59,27 @@ class loop:
 				print("???")
 
 
-	def updateLeaves(self, expr1, loop_var, loop_var_branch, ind):
+	def updateLeaves(self, expr1, loop_var, loop_var_branch, ind, solo=False):
 		if isinstance(expr1, Expression.IntConstant):
-			return Operation.Operation(Operation.Operator.TIMES, [loop_var, expr1])
+			if solo:
+				return Operation.Operation(Operation.Operator.TIMES, [loop_var, expr1])
+			else:
+				return expr1
 		else:
 			#print(expr1.toString())
 			op = expr1.getOperator()
 			if op == Operation.Operator.TIMES:
 				ops = expr1.getOperands()
 				t1 = self.updateOp(ops[0], loop_var, loop_var_branch)
-				name = str(self.index) + "_" + str(ind)
+				name = "k_" + str(self.index) + "_" + str(ind)
 				ind+=1
-				t2 = self.updateLeaves(ops[1], t1, Expression.LoopVariable(name))
+				t2 = self.updateLeaves(ops[1], t1, Expression.LoopVariable(name), ind)
 				return Operation.Operation(Operation.Operator.TIMES, [t1, t2])
-			elif op == Operation.Operator.PLUS:
+			elif op == Operation.Operator.ADD:
 				ops = expr1.getOperands()
-				t1 = self.updateLeaves(ops[0], loop_var, loop_var_branch)
-				t2 = self.updateLeaves(ops[1], loop_var, loop_var_branch)
-				return Operation.Operation(Operation.Operator.PLUS, [t1, t2])
+				t1 = self.updateLeaves(ops[0], loop_var, loop_var_branch, ind)
+				t2 = self.updateLeaves(ops[1], loop_var, loop_var_branch, ind)
+				return Operation.Operation(Operation.Operator.ADD, [t1, t2])
 			else:
 				print("?????????")
 
@@ -88,5 +91,5 @@ class loop:
 		ind+=1
 		loop_var = Operation.LoopVariable(name)
 		loop_var_branch = Operation.LoopVariable(name_branch)
-		cost_loop = self.updateLeaves(last_cost, loop_var, loop_var_branch, ind)
+		cost_loop = self.updateLeaves(last_cost, loop_var, loop_var_branch, ind, solo=True)
 		self.setCost(cost_loop)
