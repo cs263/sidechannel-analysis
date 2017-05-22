@@ -6,13 +6,15 @@ class node:
 		self.outgoing = []
 		self.incoming = [] 
 		self.back_edge = []
-		self.loop_head = (False, None)
-		self.loop_tail = (False, None)
+		self.loop_head = False
+		self.loop_tail = False
+		self.loop = None
 		self.cost = Expression.IntConstant(0)
 		self.output = False
 		self.branch = False
 		self.merge = False
 		self.variable = None
+
 	
 	def getId(self):
 		return self.identity
@@ -27,7 +29,7 @@ class node:
 		self.length = length
 
 	def setCost(self, cost):
-		self.cost = weight
+		self.cost = cost
 
 	def getCost(self):
 		return self.cost
@@ -39,16 +41,22 @@ class node:
 		return self.output
 
 	def loopHead(self):
-		self.loop_head = (True, )
+		self.loop_head = True
+
+	def setLoop(self, loop):
+		self.loop = loop
+
+	def getLoop(self):
+		return self.loop
 
 	def isLoopHead(self):
-		return self.loop_head[0]
+		return self.loop_head
 
 	def loopTail(self):
-		self.loop_tail = (True, )
+		self.loop_tail = True
 
 	def isLoopTail(self):
-		return self.loop_tail[0]
+		return self.loop_tail
 
 	def markBackEdges(self, back_edge):
 		self.back_edge = back_edge
