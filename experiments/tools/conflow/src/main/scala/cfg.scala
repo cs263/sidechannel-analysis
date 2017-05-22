@@ -4,6 +4,7 @@ import conflow.Kernel._
 import conflow.graphs._
 import conflow.constraints._
 
+/*
 case class BasicBlock(incoming: Seq[Int], outgoing: Seq[Int], isOutputNode: Boolean)
 
 object ControlFlowGraph {
@@ -15,3 +16,4 @@ object ControlFlowGraph {
 		ProgramGraph[Int, BasicBlock](Map(), Map())
 	}
 }
+*/

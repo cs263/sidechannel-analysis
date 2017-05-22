@@ -5,23 +5,64 @@ package conflow {
 	import conflow.constraints._
 
 	object Lowlevel {
-		val transformGotos = (graph: ProgramGraph[CodePoint, Constraint]) => 
+		def apply(graph: conflow.graphs.Graph[CodePoint, Constraint]) = {
+			graph.zipWithIndex.map { case (node: Node[CodePoint, Constraint], old: Int) => node match {
+				case Node(CodePoint(position, "goto", Seq(jump), cp), incoming, outgoing) =>
+					Node(CodePoint(position, "goto", Seq(jump), cp), incoming, Seq((stack.Implicit, position + jump)))
+
+				case Node(CodePoint(position, "goto_w", Seq(jump), cp), incoming, outgoing) =>
+					Node(CodePoint(position, "goto_w", Seq(jump), cp), incoming, Seq((stack.Implicit, position + jump)))
+
+				case Node(CodePoint(position, op, Seq(jump), cp), incoming, outgoing) if op startsWith "if" =>
+					val req = op match {
+						case "if_acmpeq" => Requires(2, Eq(IsRef(stack.Entry(1)), IsRef(stack.Entry(2))))
+						case "if_acmpne" => Requires(2, Ne(IsRef(stack.Entry(1)), IsRef(stack.Entry(2))))
+
+						case "if_icmpeq" => Requires(2, Eq(IsInt(stack.Entry(1)), IsInt(stack.Entry(2))))
+						case "if_icmpne" => Requires(2, Ne(IsInt(stack.Entry(1)), IsInt(stack.Entry(2))))
+						case "if_icmplt" => Requires(2, Lt(IsInt(stack.Entry(1)), IsInt(stack.Entry(2))))
+						case "if_icmpge" => Requires(2, Ge(IsInt(stack.Entry(1)), IsInt(stack.Entry(2))))
+						case "if_icmpgt" => Requires(2, Gt(IsInt(stack.Entry(1)), IsInt(stack.Entry(2))))
+						case "if_icmple" => Requires(2, Le(IsInt(stack.Entry(1)), IsInt(stack.Entry(2))))
+
+						case "ifeq" => Requires(1, Eq(IsInt(stack.Entry(1)), Nat(0)))
+						case "ifne" => Requires(1, Ne(IsInt(stack.Entry(1)), Nat(0)))
+						case "iflt" => Requires(1, Lt(IsInt(stack.Entry(1)), Nat(0)))
+						case "ifge" => Requires(1, Ge(IsInt(stack.Entry(1)), Nat(0)))
+						case "ifgt" => Requires(1, Gt(IsInt(stack.Entry(1)), Nat(0)))
+						case "ifle" => Requires(1, Le(IsInt(stack.Entry(1)), Nat(0)))
+
+						case "ifnull" => Requires(1, Eq(IsRef(stack.Entry(1)), Null))
+						case "ifnonnull" => Requires(1, Ne(IsRef(stack.Entry(1)), Null))
+					}
+
+					val branches = Seq((req.reverse, CodeLocations.relativeToAbsolute(old + 1)), (req, position + jump))
+					Node(CodePoint(position, op, Seq(jump), cp), incoming, branches)
+
+				case whatever =>
+					whatever
+			}
+		} }
+	}
+		/*
+		val transformGotos = (graph: ProgramGraph[CodePoint, Constraint]) =>
 			graph.mapEdges {
 				case (old, CodePoint(position, "goto", Seq(jump), _)) => Set((graph.get(position + jump), stack.Implicit))
 				case (old, CodePoint(position, "goto_w", Seq(jump), _)) => Set((graph.get(position + jump), stack.Implicit))
 				case (old, _) => old
 			}
-		
+
+
 		def implicitToNegationOfPredicate = (old: Iterable[(CodePoint, Constraint)], req: Constraint) =>
-			old.map { 
-				case (cp, stack.Implicit) => 
+			old.map {
+				case (cp, stack.Implicit) =>
 					(cp, req.reverse)
 
 				case rest => rest
 			}
 
 		val transformIfs = (graph: ProgramGraph[CodePoint, Constraint]) =>
-			graph.mapEdges { 
+			graph.mapEdges {
 				case (old, CodePoint(position, op, Seq(jump), _)) if op startsWith "if" =>
 					val req = op match {
 						case "if_acmpeq" => Requires(2, Eq(IsRef(stack.Entry(1)), IsRef(stack.Entry(2))))
@@ -50,10 +91,10 @@ package conflow {
 				case (old, _) => old
 			}
 
-		val transformSwitches = (graph: ProgramGraph[CodePoint, Constraint]) => 
+		val transformSwitches = (graph: ProgramGraph[CodePoint, Constraint]) =>
 			graph.mapEdges {
 				case (old, node) => node match {
-					case cp@CodePoint(index, "lookupswitch", args@Seq(default, npairs, pairIndices@_*), _) =>				
+					case cp@CodePoint(index, "lookupswitch", args@Seq(default, npairs, pairIndices@_*), _) =>
 						val pairs = pairIndices.foldLeft((Seq[(Int, Int)](), None: Option[Int]))((all, el) => {
 							if(all._2.isDefined) {
 								(all._1 ++ Seq((all._2.get, el)), None)
@@ -64,13 +105,13 @@ package conflow {
 							(graph.get(index + offset), Requires(1, Eq(IsInt(stack.Entry(1)), Nat(condition))))
 						}
 
-						pairs ++ Seq((graph.get(index + default), 
+						pairs ++ Seq((graph.get(index + default),
 							pairs.map { _._2 }.foldLeft(AllOf(Seq()))((old: AllOf, el: Constraint) => old.and(el.reverse))))
 
 					case cp@CodePoint(index, "tableswitch", args@Seq(default, low, high, offsets@_*), _) =>
 						(0 until (high - low + 1) zip offsets).map { case (i, offset) =>
 							(graph.get(index + offset), Requires(1, Eq(IsInt(stack.Entry(1)), Nat(i))))
-						} ++ Seq((graph.get(index + default), Requires(1, Eq(IsInt(stack.Entry(1)), 
+						} ++ Seq((graph.get(index + default), Requires(1, Eq(IsInt(stack.Entry(1)),
 								AllOf(Seq(
 									Lt(IsInt(stack.Entry(1)), Nat(low)),
 									Gt(IsInt(stack.Entry(1)), Nat(low))))))))
@@ -79,12 +120,14 @@ package conflow {
 				}
 			}
 
-		def apply(g: ProgramGraph[CodePoint, Constraint]) = 
+		def apply(g: ProgramGraph[CodePoint, Constraint]) =
 			transformSwitches(transformIfs(transformGotos(g)))
 
 		def graphFrom(nodes: Seq[CodePoint]) = {
- 			ProgramGraph[CodePoint, Constraint](nodes.map { case cp@CodePoint(i, _, _, _) => (i → cp) }.toMap, 
+ 			ProgramGraph[CodePoint, Constraint](nodes.map { case cp@CodePoint(i, _, _, _) => (i → cp) }.toMap,
 				(nodes zip nodes.drop(1)).map (tup => (tup._1 → Set((tup._2, stack.Implicit)))).toMap)
 		}
 	}
+
+	*/
 }

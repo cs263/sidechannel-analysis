@@ -99,7 +99,7 @@ package conflow {
 	}
 
 	case class MethodDesc(itsClass: String, itsName: String, itsType: String) extends Descriptor {
-		override def toString = s"$itsClass#$itsName : $itsType"		
+		override def toString = s"$itsClass#$itsName : $itsType"
 	}
 
 	case object FailedDesc extends Descriptor {
@@ -247,31 +247,39 @@ package conflow {
 		}
 
 		val usesConstPool = Map[String, ConstPoolDescriptor](
-			("ldc", (cp: ConstPool, arg: Int) => ValueDesc(cp.getLdcValue(arg))), 
-			("ldc_w", (cp: ConstPool, arg: Int) => ValueDesc(cp.getLdcValue(arg))), 
-			("ldc2_w", (cp: ConstPool, arg: Int) => ValueDesc(cp.getLdcValue(arg))), 
-			("new", (cp: ConstPool, arg: Int) => ValueDesc(cp.getClassInfo(arg))), 
+			("ldc", (cp: ConstPool, arg: Int) => ValueDesc(cp.getLdcValue(arg))),
+			("ldc_w", (cp: ConstPool, arg: Int) => ValueDesc(cp.getLdcValue(arg))),
+			("ldc2_w", (cp: ConstPool, arg: Int) => ValueDesc(cp.getLdcValue(arg))),
+			("new", (cp: ConstPool, arg: Int) => ValueDesc(cp.getClassInfo(arg))),
 
-			("putfield", fetchField), 
-			("putstatic", fetchField), 
-			("getfield", fetchField), 
-			("getstatic", fetchField), 
+			("putfield", fetchField),
+			("putstatic", fetchField),
+			("getfield", fetchField),
+			("getstatic", fetchField),
 
-			("invokedynamic", fetchMethod), 
-			("invokeinterface", fetchInterfaceMethod), 
-			("invokevirtual", fetchMethod), 
-			("invokestatic", fetchMethod), 
+			("invokedynamic", fetchMethod),
+			("invokeinterface", fetchInterfaceMethod),
+			("invokevirtual", fetchMethod),
+			("invokestatic", fetchMethod),
 			("invokespecial", fetchMethod),
 
-			("multianewarray", dope), 
-			("instanceof", dope), 
-			("anewarray", dope), 
+			("multianewarray", dope),
+			("instanceof", dope),
+			("anewarray", dope),
 			("checkcast", dope)
 		)
 
-		case class CodePoint(val index: Int, val mnemonic: String, 
-			val args: Seq[Int], val constPoolEntry: Option[conflow.Descriptor]) {
-			
+		object CodeLocations {
+				var relativeToAbsolute = Map[Int, Int]()
+				var absoluteToRelative = Map[Int, Int]()
+		}
+
+		case class CodePoint(
+			val index: Int,
+			val mnemonic: String,
+			val args: Seq[Int],
+			val constPoolEntry: Option[conflow.Descriptor]) {
+
 			override def toString = {
 				var result = ""
 				result += s"[ ${index} ] ${mnemonic} "
@@ -285,11 +293,13 @@ package conflow {
 			}
 		}
 
+		import conflow.graphs.Node
 		import conflow.constraints._
 
 		case class Instructions(c: CtClass, m: CtMethod) {
 			val code = m.getMethodInfo.getCodeAttribute.iterator
 			var instructions = Seq[CodePoint]()
+			var constructedGraph = Seq[Node[CodePoint, Constraint]]()
 
 			while(code.hasNext) {
 				val index = code.next
@@ -302,15 +312,27 @@ package conflow {
 
 				val codepoint = CodePoint(index, mnemonic, args.getOrElse(Seq()), fromConstPool)
 				instructions = instructions :+ codepoint
+
+				val place = constructedGraph.length
+				constructedGraph = constructedGraph :+ Node(codepoint)
+				CodeLocations.relativeToAbsolute += (place → index)
+				CodeLocations.absoluteToRelative += (index → place)
 			}
 
-			lazy val cfg = conflow.Lowlevel.graphFrom(instructions)
+			constructedGraph = for(
+				i <- constructedGraph.indices;
+				atI: Node[CodePoint, Constraint] = constructedGraph(i);
+				augmented: Node[CodePoint, Constraint] =
+					if(i + 1 < constructedGraph.length)
+						Node(atI.value, Seq(), Seq((stack.Implicit, CodeLocations.relativeToAbsolute(i + 1))))
+					else
+						atI) yield augmented
 
-			def graph() = cfg
+			def graph = constructedGraph
 		}
 
 		object Instructions {
-			def apply(klass: String, method: String, desc: String): Option[Instructions] = 
+			def apply(klass: String, method: String, desc: String): Option[Instructions] =
 				for {
 					c <- fetchClass(klass)
 					m <- fetchMethod(c, method, desc)
