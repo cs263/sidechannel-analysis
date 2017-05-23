@@ -52,7 +52,6 @@ class AcyclicVisitor():
 	def getCostofNode(self, node):
 		if not node.isLoopHead() or node == self.target:
 			return node.getCost()
-		print("geting cost of loop")
 		l = node.getLoop()
 		cost_loop = l.getCost()
 		return Operation.Operation(Operation.Operator.ADD, [cost_loop, node.getCost()])
@@ -93,22 +92,18 @@ class AcyclicVisitor():
 				var = Expression.BooleanVariable("b_" +str(self.index), node)
 				self.index+=1
 				node.setVariable(var)
-			print("for node " + str(node.getId()))
-			print("getting cost from " + str(incoming_neighbors[0].getId()))
+			
 			b1 = self.getCostofNode(incoming_neighbors[0])
-			print("cost is " + str(b1.toString()))
 			term1 = Operation.Operation(Operation.Operator.TIMES, [var, b1])
-			print("getting cost from " + str(incoming_neighbors[1].getId()))
 
 			b2 = self.getCostofNode(incoming_neighbors[1])
-			print("cost is " + str(b2.toString()))
 
 			var_ = Operation.Operation(Operation.Operator.SUB, [Expression.IntConstant(1), var])
 			term2 = Operation.Operation(Operation.Operator.TIMES, [var_, b2])
 			weight = Operation.Operation(Operation.Operator.ADD, [term1, term2])
 			node.setCost(weight)
 		else:
-			print("WTF")
+			print("??????")
 		print(node.getId())
 		print(node.getCost().toString())
 
