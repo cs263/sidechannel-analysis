@@ -9,11 +9,12 @@ package conflow {
 			Kernel.append("tests/Switches.jar")
 			Kernel.append("tests/PasswordInsecure.jar")
 
-//			val cfg = Kernel.Instructions("Switches", "doStuff", "()V").get.graph
-			val cfg = Kernel.Instructions("tests.password.PasswordInsecure", "main", "([Ljava/lang/String;)V").get.graph
+			val cfg = Kernel.Instructions("Switches", "doStuff", "()V").get.graph
+//			val cfg = Kernel.Instructions("tests.password.PasswordInsecure", "main", "([Ljava/lang/String;)V").get.graph
 
-			println(Lowlevel(cfg))
+			val graph = LowLevelEnumeration(LowlevelJumps(cfg))
 
+			println(conflow.graphs.Graph.dot(graph.toSeq))
 			// send to channel helloworld
 			//"helloworld" << Kernel("javassist.CtClass")
 		}

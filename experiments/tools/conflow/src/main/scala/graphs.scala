@@ -9,10 +9,21 @@ package conflow {
 			incoming: Seq[(S, Int)],
 			outgoing: Seq[(S, Int)])
 
+		type Graph[T, S] = Seq[Node[T, S]]
+
 		object Node {
 			def apply[T, S](v: T): Node[T, S] = Node(v, Seq(), Seq())
 		}
 
-		type Graph[T, S] = Seq[Node[T, S]]
+		object Graph {
+			def dot[T, S](graph: Graph[T, S]): String = {
+				val parts = graph.map { case n@Node(k, in, vs) =>
+					vs.map { case (s, i) => s"\tBB${k} -> BB${i}" }.mkString(";\n") //+ "[label=\"" + s + "\"]" }.mkString(";\n")
+				}.mkString(";\n")
+
+				s"digraph G {\n${parts}}"
+			}
+		}
+
 	}
 }

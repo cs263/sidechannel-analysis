@@ -3,11 +3,7 @@ package conflow.constraints {
 	sealed trait Constraint {
 		def reverse: Constraint = Not(this)
 
-		def and(o: Constraint): AllOf = {
-			println(s"\nconcat ${this} and ${o}")
-			println(s"result: ${AllOf.from(this, o)}")
-			AllOf.from(this, o)
-		}
+		def and(o: Constraint): AllOf = AllOf.from(this, o)
 		def or(o: Constraint): AnyOf = AnyOf.from(this, o)
 	}
 
@@ -84,6 +80,7 @@ package conflow.constraints {
 
 	package stack {
 		case object Implicit extends StackConstraint
+		case object Jump extends StackConstraint
 		case class Entry(n: Int) extends StackConstraint
 	}
 }
