@@ -1,5 +1,7 @@
 from graph import node, loop
 from visitors import branch_visitor, loop_visitor, nesting_visitor, acyclic_visitor
+from visitors.expr_visitors import multiplication_visitor
+from expr import Operation
 
 class cfg:
 	def __init__(self):
@@ -86,6 +88,23 @@ class cfg:
 		l.setBody(body)
 
 	def annotateLoop(self, l):
+		def updateWeight(l):
+			start, end = l.getId()
+			c = end.getCost()
+			index = l.getIndex()
+			name = "k_" +str(index)
+			ind = 0 
+			name_branch = name + "_" +str(ind)
+			ind+=1
+			loop_var = Operation.LoopVariable(name)
+			loop_var_branch = Operation.LoopVariable(name_branch)
+			visitor = multiplication_visitor.MultiplicationVisitor(index)
+			res = visitor.visit(c, loop_var, loop_var_branch, ind)
+			print("Cost of the loop is ")
+			print(res.toString())
+			l.setCost(res) 
+
+
 		for ll in l.nestedLoops():
 			self.annotateLoop(ll)
 		s, e = l.getId()
@@ -93,8 +112,7 @@ class cfg:
 		print("visiting!")
 		visitor.visit(e)
 		print("done visiting")
-		l.updateWeight()
-		print(l.getCost().toString())
+		updateWeight(l)
 
 
 
