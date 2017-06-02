@@ -1,4 +1,4 @@
-package tests.password;
+package experiments.programs.password.java;
 
 public class PasswordConstantTime {
 
@@ -10,6 +10,11 @@ public class PasswordConstantTime {
     	}
         int res = 0;
         for (int i = 0; i < s.length(); i++){
+        	try {
+                Thread.sleep(1000);
+            } catch(InterruptedException ex){
+                Thread.currentThread().interrupt();
+            }
             res |= s.charAt(i) ^ password.charAt(i);
         }
         return res == 0;
