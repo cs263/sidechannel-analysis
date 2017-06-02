@@ -1,4 +1,4 @@
-package tests.password;
+package experiments.programs.password.java;
 
 public class PasswordInsecure {
 
@@ -9,6 +9,12 @@ public class PasswordInsecure {
     		return false;
     	}
         for (int i = 0; i < s.length(); i++) {
+            try {
+                Thread.sleep(1000);
+            } catch(InterruptedException ex){
+                Thread.currentThread().interrupt();
+            }
+
             if (s.charAt(i) != password.charAt(i)) {
                 return false;
             }
