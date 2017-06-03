@@ -4,26 +4,32 @@ import java.util.*;
 import java.security.*;
 import java.io.*;
 
-public class PasswordConstantTime implements PasswordChecker {
+public class PasswordPossiblyTwo implements PasswordChecker {
     private static Dictionary d = new Dictionary();
 
     public static void main(String[] args) throws IOException {
-        d.run(new PasswordConstantTime());
+        d.run(new PasswordPossiblyTwo());
     }
 
-    public boolean checkPassword(String s, final String password){
+    public boolean checkPassword(String s, final String password) {
+        boolean flag = true; 
+        boolean flag2 = true; 
         if (s.length() != password.length()){
             return false;
         }
-        int res = 0;
         for (int i = 0; i < s.length(); i++){
             try {
                 Thread.sleep(1);
             } catch(InterruptedException ex){
                 Thread.currentThread().interrupt();
             }
-            res |= s.charAt(i) ^ password.charAt(i);
+            if (s.charAt(i) != password.charAt(i)){
+                flag = false; 
+            }
+            else{
+                flag2 = !flag2;
+            }
         }
-        return res == 0;
+        return flag;
     }
 }

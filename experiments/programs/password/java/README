@@ -1,0 +1,15 @@
+
+make -- compiles code
+make V=<version> run -- runs a certain version
+	
+	The versions are decided by their name: the prefix of all of them is Password,
+	while the rest of the name is what the argument takes.
+
+	Example:
+
+		make V=ConstantTime run
+		make V=NoLengthCheck run
+		make V=Insecure run
+		make V=Possibly run
+		make V=PossiblyTwo run
+

@@ -4,18 +4,17 @@ import java.util.*;
 import java.security.*;
 import java.io.*;
 
-public class PasswordInsecure implements PasswordChecker {
+public class PasswordNoLengthCheck implements PasswordChecker {
     private static Dictionary d = new Dictionary();
 
     public static void main(String[] args) throws IOException {
-        d.run(new PasswordInsecure());
+        d.run(new PasswordNoLengthCheck());
     }
 
     public boolean checkPassword(String s, final String password) {
-        if (s.length() != password.length()) {
-            return false;
-        }
-        for (int i = 0; i < s.length(); i++) {
+        int min = Math.min(s.length(), password.length());
+
+        for (int i = 0; i < min; i++) {
             try {
                 Thread.sleep(1);
             } catch(Exception e) {}
@@ -24,6 +23,7 @@ public class PasswordInsecure implements PasswordChecker {
                 return false;
             }
         }
-        return true;
+
+        return true;    
     }
 }
