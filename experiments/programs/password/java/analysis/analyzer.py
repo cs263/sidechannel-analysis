@@ -1,5 +1,6 @@
 import sys
 import numpy as np 
+import operator
 
 #Very hacked code to get quick results. Just pipe the output of your run java V=.... run > file1 and run python analyzer.py file1. 
 results = {}
@@ -28,4 +29,5 @@ if __name__ == "__main__":
 			word = in_out[1]
 			update_res(num, word)
 	process()
-	print(results)
+	sorted_res = sorted(results.items(), key=operator.itemgetter(1), reverse =True)
+	print(sorted_res)

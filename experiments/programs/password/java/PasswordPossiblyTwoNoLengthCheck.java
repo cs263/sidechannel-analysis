@@ -20,16 +20,16 @@ public class PasswordPossiblyTwoNoLengthCheck implements PasswordChecker {
         }
        
         for (int i = 0; i < min; i++){
-            try {
+            /*try {
                 Thread.sleep(1);
             } catch(InterruptedException ex){
                 Thread.currentThread().interrupt();
-            }
+            }*/
             if (s.charAt(i) != password.charAt(i)){
                 flag = false; 
             }
             else{
-                flag2 = !flag2;
+                flag2 = false;
             }
         }
         return flag;
