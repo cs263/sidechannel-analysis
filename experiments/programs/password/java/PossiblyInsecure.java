@@ -1,23 +1,25 @@
 package experiments.programs.password.java;
 
-public class PasswordConstantTime {
+public class PossiblyInsecure {
 
     private static String password;
 
     public static boolean checkPassword(String s){
+        boolean flag = true; 
     	if (s.length() != password.length()){
             return false;
     	}
-        int res = 0;
         for (int i = 0; i < s.length(); i++){
-        	try {
+            try {
                 Thread.sleep(1000);
             } catch(InterruptedException ex){
                 Thread.currentThread().interrupt();
             }
-            res |= s.charAt(i) ^ password.charAt(i);
+            if (s.charAt(i) != password.charAt(i)){
+                flag = false; 
+            }
         }
-        return res == 0;
+        return flag;
     }
 
     public static void main(String[] args){
