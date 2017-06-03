@@ -21,7 +21,7 @@ public class Dictionary {
     public void run(PasswordChecker pc) {
         password = words.get(rnd.nextInt(words.size()));
         System.out.println(password + "\n===========================");
-        for(int i = 0; i < 10000; i++) {
+        for(int i = 0; i < 1000000; i++) {
             String chosen = words.get(rnd.nextInt(words.size() - 1));
             t = System.nanoTime();
             pc.checkPassword(chosen, password);

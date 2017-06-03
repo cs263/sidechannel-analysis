@@ -15,7 +15,7 @@ public class PasswordPossiblyTwoNoLengthCheck implements PasswordChecker {
         boolean flag = true; 
         boolean flag2 = true; 
         int min = Math.min(s.length(), password.length());
-            if (min > 4){
+        if (min > 4){
             min = 4;
         }
        
