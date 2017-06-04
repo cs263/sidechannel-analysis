@@ -10,12 +10,17 @@ package conflow {
 
 //			val cfg = Kernel.Instructions("Switches", "doStuff", "()V").get.graph
 
-			val cfg = Kernel.Instructions("tests.password.PasswordInsecure", "checkPassword", "(Ljava/lang/String;Ljava/lang/String;)Z").get.graph
-			val ll = GetLowlevelJumps(cfg)
-			val graph = BuildBlocks(ll)
-			graph.map { println _ }
-			val diag = conflow.graphs.Graph.dot(graph, conflow.Kernel.CodeBlock.asInt, Option("password_insecure"))
+			val versions = Seq(
+				"ConstantTime", "ConstantNoLengthCheck", "Insecure", "InsecureNoLengthCheck", 
+				"Possibly", "PossiblyNoLengthCheck", "PossiblyTwo", "PossiblyTwoNoLengthCheck")
 
+			versions.map { v => 
+				val cfg = Kernel.Instructions("tests.password.Password" + v, "checkPassword", "(Ljava/lang/String;Ljava/lang/String;)Z").get.graph
+				val ll = GetLowlevelJumps(cfg)
+				val graph = BuildBlocks(ll)
+				graph.map { println _ }
+				val diag = conflow.graphs.Graph.dot(graph, conflow.Kernel.CodeBlock.asInt, Option(v))
+			}
 //			println(ll)
 
 		}
