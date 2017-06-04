@@ -25,7 +25,7 @@ package conflow {
 				val g = s"digraph G {\n${parts}}"
 
 				if(!write.isEmpty)
-					s"echo ${g}" #| s"dot -Tpdf -o ${write.get}.pdf" !
+					s"echo ${g}" #| s"dot -Tpng -o ${write.get}.png" !
 
 				g
 			}
