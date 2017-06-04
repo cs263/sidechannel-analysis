@@ -14,6 +14,9 @@ def update_res(num, word):
 
 def process():
 	for key in results.keys():
+		if (len(results[key]) < 1000):
+			del results[key]
+			continue
 		results[key] = np.mean(results[key])
 
 if __name__ == "__main__":
