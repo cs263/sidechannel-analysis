@@ -1,4 +1,11 @@
 
+object Names {
+	val letters = Seq("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
+					  "l", "m", "n", "o", "p", "r", "s", "t", "u", "v", "w",
+					  "x", "y", "z")
+}
+
+
 package conflow.constraints {
 	sealed trait Constraint {
 		def reverse: Constraint = Not(this)
@@ -80,6 +87,8 @@ package conflow.constraints {
 
 	package stack {
 		case object Implicit extends StackConstraint
+		case object Exception extends StackConstraint
+		case object Invoke extends StackConstraint
 		case object Jump extends StackConstraint
 		case class Entry(n: Int) extends StackConstraint
 	}
@@ -129,7 +138,6 @@ package conflow {
 			Try(ct.getMethod(name, desc)) match {
 				case Success(m) => Option(m)
 				case Failure(e) =>
-					println("Other candidates:")
 					ct.getDeclaredMethods(name).foreach { println _ }
 					None
 			}
@@ -138,8 +146,10 @@ package conflow {
 		val indexAsByte = (code: CodeIterator, index: Int) =>
 			Seq(code.byteAt(index))
 
-		val indexAsWord = (code: CodeIterator, index: Int) =>
-			Seq(code.u16bitAt(index))
+		val indexAsWord = (code: CodeIterator, index: Int) => {
+			val n = code.u16bitAt(index)
+			Seq(if(n > 32000) -(65536 - n) else n)
+		}
 
 		val indexAsWide = (code: CodeIterator, index: Int) =>
 			Seq(code.s32bitAt(index))
@@ -269,6 +279,9 @@ package conflow {
 		object CodeLocations {
 				var relativeToAbsolute = Map[Int, Int]()
 				var absoluteToRelative = Map[Int, Int]()
+
+				def ref(a: Int, b: Int): Int = 
+					CodeLocations.relativeToAbsolute(CodeLocations.absoluteToRelative(a) + b)
 		}
 
 		case class CodePoint(
@@ -290,13 +303,21 @@ package conflow {
 			}
 		}
 
+		case class CodeBlock(val id: Int = 0, cps: Seq[CodePoint]) {
+			override def toString = s"${id}"
+		}
+
+		object CodeBlock {
+			def asInt = (x: conflow.Kernel.CodeBlock) => x.id
+		}
+
 		import conflow.graphs.Node
 		import conflow.constraints._
 
 		case class Instructions(c: CtClass, m: CtMethod) {
 			val code = m.getMethodInfo.getCodeAttribute.iterator
 			var instructions = Seq[CodePoint]()
-			var constructedGraph = Seq[Node[CodePoint, Constraint]]()
+			private var constructedGraph = Seq[Node[CodePoint, Constraint]]()
 
 			while(code.hasNext) {
 				val index = code.next
@@ -316,16 +337,36 @@ package conflow {
 				CodeLocations.absoluteToRelative += (index → place)
 			}
 
+			val exceptionTable = m.getMethodInfo.getCodeAttribute.getExceptionTable
+
+			val exceptions = (0 until exceptionTable.size).map { i =>
+				val start = CodeLocations.absoluteToRelative(exceptionTable.startPc(i))
+				val end = CodeLocations.absoluteToRelative(exceptionTable.endPc(i))
+				val handler = exceptionTable.handlerPc(i)
+				((start to end), handler)
+			}.toSeq
+
 			constructedGraph = for(
 				i <- constructedGraph.indices;
 				atI: Node[CodePoint, Constraint] = constructedGraph(i);
-				augmented: Node[CodePoint, Constraint] =
+				augmented: Node[CodePoint, Constraint] = 
 					if(i + 1 < constructedGraph.length)
 						Node(atI.value, Seq(), Seq((stack.Implicit, CodeLocations.relativeToAbsolute(i + 1))))
 					else
 						atI) yield augmented
 
-			def graph = constructedGraph
+			val exceptionalGraph = constructedGraph.map { case Node(cp@CodePoint(i, _, _, _), in, out) => 
+				val inside_error_handler = exceptions.flatMap {
+					case(ab, h) => 
+						if(ab.contains(i)) {
+							Seq((stack.Exception, h))
+						} else Seq()
+				}.toSeq
+
+				Node(cp, in, out ++ inside_error_handler)
+			}
+
+			def graph = exceptionalGraph
 		}
 
 		object Instructions {
