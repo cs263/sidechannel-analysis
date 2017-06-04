@@ -4,19 +4,20 @@ package conflow {
 	import conflow.Kernel._
 	import conflow.constraints._
 
-	object LowLevelEnumeration {
+	object BuildBlocks {
 		val endings = Set("if_acmpeq", "if_acmpne", "if_icmpeq", "if_icmpne",
 			"if_icmplt", "if_icmpge", "if_icmpgt", "if_icmple", "ifeq", "ifne",
 			"iflt", "ifge", "ifgt", "ifle", "ifnull", "ifnonnull", "gogto", "goto_w",
 			"lookupswitch", "tableswitch", "return")
 
-		def apply(graph: conflow.graphs.Graph[CodePoint, Constraint]): conflow.graphs.Graph[Int, Constraint] = {
+		def apply(graph: conflow.graphs.Graph[CodePoint, Constraint]): conflow.graphs.Graph[Int, Int] = {
 			val worklist = scala.collection.mutable.Stack[Int]()
-			val assigned = scala.collection.mutable.Map[Int, Int]()
+			val assigned = scala.collection.mutable.Map[Int, Int]()			
 			val done = scala.collection.mutable.Set[Int]()
 
 			var jump = false
 			var currentBlock: Int = 0
+			var length: Int = 1
 
 			assigned += (0 → currentBlock)
 			worklist push 0
@@ -29,14 +30,19 @@ package conflow {
 					currentBlock += 1
 				}
 
+				length += 1
+
 				if(!done.contains(current)) {
 					graph(CodeLocations.absoluteToRelative(current)) match {
 						case Node(CodePoint(position, op, _, _), _, outgoing) =>
 							if(endings contains op) {	// this is a jump, assign new block
 								outgoing.map { case (constraint, index) =>
 									if(!assigned.contains(index)) {
+										//costs += (currentBlock → length)
 										currentBlock += 1
 										assigned += (index → currentBlock)
+										length = 1
+
 										worklist push index
 									}
 								}
@@ -62,15 +68,43 @@ package conflow {
 			val blocks = groups.map { case (k, v) =>
 				k → v.flatMap { w => graph(CodeLocations.absoluteToRelative(w)) match {
 						case Node(CodePoint(position, op, _, _), _, outgoing) =>
-							outgoing.map { case (constraint, location) => (constraint, assigned(location)) }.filter { _ != (stack.Implicit, k) }
+							outgoing.map { 
+								case (c, l) if c == stack.Implicit && assigned(l) == k =>
+									None
+								case (constraint, location) => 
+									Option((constraint, assigned(location))) 
+							}.filter { _ != None }.map { _.get }
 					} }.filter { _ != List() }.toSeq
 			}
 
-			blocks.toSeq.map { case (k: Int, v) => Node(k, Seq(), v) }
+			blocks.toSeq.map { case (k: Int, v) =>
+				Node(k, Seq(), v.map { case (x, n) => (groups(k).size, n) }) }
+
 		}
 	}
 
-	object LowlevelJumps {
+/*
+	object MakeLogicJumps {
+		def apply(graph: conflow.graphs.Graph[CodePoint, Constraint]): conflow.graphs.Graph[CodePoint, Int] = {
+			def constraint_to_int(c: Constraint): Int = 
+				if(c == stack.Implicit) 0 else 1
+
+			def constraint_to_address(ca: (Constraint, Int)): (Int, Int) =
+				ca match { case (k, a) => (constraint_to_int(k), a) }
+
+			graph.zipWithIndex.map { case (node: Node[CodePoint, Constraint], n: Int) => 
+				node match {
+					case Node(CodePoint(position, inst, args, cp), incoming, outgoing) =>
+						Node(CodePoint(position, inst, args, cp), 
+							incoming map constraint_to_address, 
+							outgoing map constraint_to_address)
+				}
+			}
+		}
+	}
+*/
+
+	object GetLowlevelJumps {
 		def apply(graph: conflow.graphs.Graph[CodePoint, Constraint]) = {
 			graph.zipWithIndex.map { case (node: Node[CodePoint, Constraint], n: Int) => node match {
 				case Node(CodePoint(position, "goto", Seq(jump), cp), incoming, outgoing) =>

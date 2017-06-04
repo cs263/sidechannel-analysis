@@ -1,3 +1,4 @@
+import sys.process._
 
 package conflow {
 	package object graphs {
@@ -16,12 +17,17 @@ package conflow {
 		}
 
 		object Graph {
-			def dot[T, S](graph: Graph[T, S]): String = {
+			def dot[T, S](graph: Graph[T, S], write: Option[String]): String = {
 				val parts = graph.map { case n@Node(k, in, vs) =>
-					vs.map { case (s, i) => s"\t${k} -> ${i}" } + "[label=\"" + s + "\"]" }.mkString(";\n")
+					vs.map { case (s, i) => s"\t${k} -> ${i}" + "[label=\"" + s + "\"]" }.mkString(";\n")
 				}.mkString(";\n")
 
-				s"digraph G {\n${parts}}"
+				val g = s"digraph G {\n${parts}}"
+
+				if(!write.isEmpty)
+					s"echo ${g}" #| s"dot -Tpdf -o ${write.get}.pdf" !
+
+				return g
 			}
 		}
 
