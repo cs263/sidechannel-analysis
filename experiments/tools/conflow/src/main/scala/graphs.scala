@@ -27,7 +27,33 @@ package conflow {
 				if(!write.isEmpty)
 					s"echo ${g}" #| s"dot -Tpdf -o ${write.get}.pdf" !
 
-				return g
+				g
+			}
+
+			def json[T, S](graph: Graph[T, S], write: Option[String]): String = {
+				val whole = graph.map {
+					case Node(cp, in, out) =>
+						val id_prop = "\"id\" : \"" + cp + "\", "
+						val incoming_prop = "\"incoming\" : { " +
+							in.map { case (node, cost) => "\"" + node + "\" : \"" + cost + "\"" }.mkString(", ") + " }, "
+
+						val outgoing_prop = "\"outgoing\" : { " +
+							out.map { case (node, cost) => "\"" + node + "\" : \"" + cost + "\"" }.mkString(", ") + " }"
+
+						"{ " + id_prop + incoming_prop + outgoing_prop + " }"
+				}.mkString(", \n")
+
+				val nodes = "[ " + whole + " ]"
+				println(nodes)
+
+				if(!write.isEmpty) {
+					val writer = new java.io.PrintWriter(new java.io.File(write.get + ".json"))
+
+					writer.write(nodes)
+					writer.close()
+				}
+
+				nodes
 			}
 		}
 
