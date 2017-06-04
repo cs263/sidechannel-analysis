@@ -35,10 +35,10 @@ package conflow {
 					case Node(cp, in, out) =>
 						val id_prop = "\"id\" : \"" + cp + "\", "
 						val incoming_prop = "\"incoming\" : { " +
-							in.map { case (node, cost) => "\"" + node + "\" : \"" + cost + "\"" }.mkString(", ") + " }, "
+							in.map { case (node, cost) => "\"" + cost + "\" : \"" + node + "\"" }.mkString(", ") + " }, "
 
 						val outgoing_prop = "\"outgoing\" : { " +
-							out.map { case (node, cost) => "\"" + node + "\" : \"" + cost + "\"" }.mkString(", ") + " }"
+							out.map { case (node, cost) => "\"" + cost + "\" : \"" + node + "\"" }.mkString(", ") + " }"
 
 						"{ " + id_prop + incoming_prop + outgoing_prop + " }"
 				}.mkString(", \n")
