@@ -5,11 +5,11 @@ import java.security.*;
 import java.io.*;
 import java.util.Random;
 
-public class PasswordPossiblyTwoNoLengthCheck implements PasswordChecker {
+public class PasswordPossiblyTwoNoLengthCheckRandomReturn implements PasswordChecker {
     private static Dictionary d = new Dictionary();
 
     public static void main(String[] args) throws IOException {
-        d.run(new PasswordPossiblyTwoNoLengthCheck());
+        d.run(new PasswordPossiblyTwoNoLengthCheckRandomReturn());
     }
 
     public boolean checkPassword(String s, final String password) {
@@ -34,7 +34,8 @@ public class PasswordPossiblyTwoNoLengthCheck implements PasswordChecker {
                 flag[1] = false;
             }
         }
-       
-        return flag[0];
+        if (new Random().nextInt(2)==1){
+        return flag[0];}
+        return flag[1];
     }
 }
