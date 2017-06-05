@@ -3,6 +3,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.security.*;
 import java.io.*;
+import java.util.Random;
 
 public class PasswordPossiblyTwoNoLengthCheck implements PasswordChecker {
     private static Dictionary d = new Dictionary();
@@ -12,8 +13,9 @@ public class PasswordPossiblyTwoNoLengthCheck implements PasswordChecker {
     }
 
     public boolean checkPassword(String s, final String password) {
-        boolean flag = true; 
-        boolean flag2 = true; 
+        boolean[] flag = new boolean[2];
+        flag[0] = true; 
+        flag[1] = true; 
         int min = Math.min(s.length(), password.length());
         if (min > 4){
             min = 4;
@@ -26,12 +28,13 @@ public class PasswordPossiblyTwoNoLengthCheck implements PasswordChecker {
                 Thread.currentThread().interrupt();
             }*/
             if (s.charAt(i) != password.charAt(i)){
-                flag = false; 
+                flag[0] = false; 
             }
             else{
-                flag2 = false;
+                flag[1] = false;
             }
         }
-        return flag;
+       
+        return flag[0];
     }
 }

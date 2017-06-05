@@ -7,9 +7,13 @@ import matplotlib.pyplot as plt
 #Very hacked code to get quick results. Just pipe the output of your run java V=.... run > file1 and run python analyzer.py file1. 
 results = {}
 secret = None
+secret_old = None
 
 def update_res(num, word):
-	k = word[0]
+	k = word[1]
+	if k == secret:
+		if word[0] == secret_old:
+			return 
 	if k in results:
 		results[k].append(int(num))
 	else:
@@ -39,8 +43,9 @@ if __name__ == "__main__":
 	for i,line in enumerate(open(input_file)):
 		if i < 3:
 			if i == 1:
-				print("first letter is " + line[0])
-				secret = line[0]
+				print("second letter is " + line[1])
+				secret = line[1]
+				secret_old = line[0]
 			continue
 		if i < 100000:
 			continue
