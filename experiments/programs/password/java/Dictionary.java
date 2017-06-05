@@ -23,6 +23,10 @@ public class Dictionary {
         System.out.println(password + "\n===========================");
         for(int i = 0; i < 1000000; i++) {
             String chosen = words.get(rnd.nextInt(words.size() - 1));
+            while (chosen.length()< 4){
+                chosen = words.get(rnd.nextInt(words.size() - 1));
+
+            }
             t = System.nanoTime();
             pc.checkPassword(chosen, password);
             t = System.nanoTime() - t;
