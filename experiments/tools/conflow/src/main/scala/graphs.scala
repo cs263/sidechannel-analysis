@@ -17,15 +17,15 @@ package conflow {
 		}
 
 		object Graph {
-			def dot[T, S](graph: Graph[T, S], fn: T => Int, write: Option[String]): String = {
+			def dot[T, S](graph: Graph[T, S], fn: T => Int, write: Option[String], as: String = "pdf"): String = {
 				val parts = graph.map { case n@Node(k, in, vs) =>
-					vs.map { case (s, i) => s"\t${Names.letters(fn(k))} -> ${Names.letters(i)}" + "[label=\"" + s + "\"]" }.mkString("\n")
+					vs.map { case (s, i) => s"\t${fn(k)} -> ${i}" + "[label=\"" + s + "\"]" }.mkString("\n")
 				}.mkString("\n")
 
 				val g = s"digraph G {\n${parts}}"
 
 				if(!write.isEmpty)
-					s"echo ${g}" #| s"dot -Tpng -o ${write.get}.png" !
+					s"echo ${g}" #| s"dot -T${as} -o ${write.get}.${as}" !
 
 				g
 			}

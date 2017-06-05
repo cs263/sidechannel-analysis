@@ -86,6 +86,7 @@ package conflow.constraints {
 	sealed trait StackConstraint extends Constraint
 
 	package stack {
+		case object Return extends StackConstraint
 		case object Implicit extends StackConstraint
 		case object Exception extends StackConstraint
 		case object Invoke extends StackConstraint

@@ -4,12 +4,17 @@ package conflow {
 	import conflow.Kernel._
 	import conflow.constraints._
 
+	object G {
+		val imaginaryEnd = 1001001
+	}
+
 	object BuildBlocks {
 		val endings = Set("if_acmpeq", "if_acmpne", "if_icmpeq", "if_icmpne",
 			"if_icmplt", "if_icmpge", "if_icmpgt", "if_icmple", "ifeq", "ifne",
 			"iflt", "ifge", "ifgt", "ifle", "ifnull", "ifnonnull", "gogto", "goto_w",
 			"lookupswitch", "tableswitch", "return", "invokedynamic", "invokestatic",
-			"invokeinterface", "invokevirtual", "invokespecial")
+			"invokeinterface", "invokevirtual", "invokespecial", "areturn", "freturn",
+			"lreturn", "dreturn", "ireturn", "return")
 
 		def apply(graph: conflow.graphs.Graph[CodePoint, Constraint]): conflow.graphs.Graph[CodeBlock, Int] = {
 			val assigned = scala.collection.mutable.Map[Int, Int]()			
@@ -36,31 +41,35 @@ package conflow {
 					length += 1
 
 					if(!done.contains(current)) {
-						graph(CodeLocations.absoluteToRelative(current)) match {
-							case Node(CodePoint(position, op, _, _), _, outgoing) =>
-								if(endings contains op) {	// this is a jump, assign new block
-									outgoing.map { case (constraint, index) =>
-										if(!assigned.contains(index)) {
-											currentBlock += 1
-											assigned += (index → currentBlock)
-											length = 1
+						if(current != G.imaginaryEnd) {
+							val location = CodeLocations.absoluteToRelative(current)
+							if(location != G.imaginaryEnd) 
+								graph(location) match {
+									case Node(CodePoint(position, op, _, _), _, outgoing) =>
+										if(endings contains op) {	// this is a jump, assign new block
+											outgoing.map { case (constraint, index) =>
+												if(!assigned.contains(index)) {
+													currentBlock += 1
+													assigned += (index → currentBlock)
+													length = 1
 
-											worklist push index
-										}
-									}
-								} else { // this is not a jump, use this block to mark next
-									outgoing.map { case (constraint, index) =>
-										if(!assigned.contains(index)) {
-											val key = assigned(current)
-											assigned += (index → key)
+													worklist push index
+												}
+											}
+										} else { // this is not a jump, use this block to mark next
+											outgoing.map { case (constraint, index) =>
+												if(!assigned.contains(index)) {
+													val key = assigned(current)
+													assigned += (index → key)
 
-											worklist push index
+													worklist push index
+												}
+											}
 										}
-									}
 								}
-						}
 
-						done.add(current)
+							done.add(current)
+						}
 					} else {
 						jump = true
 					}
@@ -102,8 +111,10 @@ package conflow {
 
 							val outgoing_blocks = outgoing.map {
 								case (constraint, address) => 
-									val loc = CodeLocations.absoluteToRelative(address)
-									worklist push loc
+									if(address != G.imaginaryEnd) {
+										val loc = CodeLocations.absoluteToRelative(address)
+										worklist push loc
+									}
 									(constraint, assigned(address))
 							} // (constraint, block) instead of (constraint, index)
 
@@ -145,8 +156,13 @@ package conflow {
 	}
 
 	object GetLowlevelJumps {
-		def apply(graph: conflow.graphs.Graph[CodePoint, Constraint]) = {
+		def apply(graphx: conflow.graphs.Graph[CodePoint, Constraint]) = {
+			val graph = graphx :+ Node(CodePoint(G.imaginaryEnd, "end", Seq(), None), Seq(), Seq())
+
 			def makeJumps(node: Node[CodePoint, Constraint]): Seq[(Constraint, Int)] = node match {
+				case Node(cp@CodePoint(position, op, args, cpe), incoming, outgoing) if op endsWith "return" => 
+					Seq((stack.Return, G.imaginaryEnd))
+
 				case Node(cp@CodePoint(position, op, args, cpe), incoming, outgoing) if op startsWith "invoke" =>
 					val next = CodeLocations.ref(position, 1)	
 					Seq((stack.Invoke, next))
@@ -204,6 +220,8 @@ package conflow {
 									Gt(IsInt(stack.Entry(1)), Nat(low)))))), index + default))
 
 					allPairs
+				case Node(cp@CodePoint(id, _, _, _), in, Seq()) if id != G.imaginaryEnd =>
+					Seq((stack.Return, G.imaginaryEnd))
 				case n@Node(cp, in, out) =>
 					out
 			}
