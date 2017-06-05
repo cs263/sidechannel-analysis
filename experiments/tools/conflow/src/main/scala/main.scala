@@ -7,10 +7,9 @@ package conflow {
 		def main(args: Array[String]): Unit = {
 			Kernel.append("tests/passwords.jar")
 
-//			val versions = Seq("ConstantTime", "ConstantNoLengthCheck", "Insecure", "InsecureNoLengthCheck", 
-//				"Possibly", "PossiblyNoLengthCheck", "PossiblyTwo", "PossiblyTwoNoLengthCheck")
+			val versions = Seq("Seq", "SeqPar", "ConstantTime", "ConstantNoLengthCheck", "Insecure", "InsecureNoLengthCheck", 
+				"InsecureNoSleep", "Possibly", "PossiblyNoLengthCheck", "PossiblyTwo", "PossiblyTwoNoLengthCheck")
 
-			val versions = Seq("Insecure", "InsecureNoSleep")
 
 			versions.map { v => 
 				val cfg = Kernel.Instructions("tests.password.Password" + v, "checkPassword", "(Ljava/lang/String;Ljava/lang/String;)Z").get.graph
