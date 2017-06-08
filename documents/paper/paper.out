@@ -1,0 +1,7 @@
+\BOOKMARK [1][-]{section.1}{Introductory thoughts on side-channels}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Project outline}{section.1}% 2
+\BOOKMARK [1][-]{section.2}{Experiments}{}% 3
+\BOOKMARK [2][-]{subsection.2.1}{Setup}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.2}{Methods of side-channel analysis in runtime systems}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.3}{Differences in side-channels due to language design}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.4}{Runtime options and their effect on side-channel strength}{section.2}% 7
