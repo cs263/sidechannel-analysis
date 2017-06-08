@@ -11,6 +11,7 @@ public class Dictionary {
     private static final ArrayList<String> words = new ArrayList<String>();
     private static String password;
     private static long t;
+    private static double threshold = .9; 
 
     public Dictionary() {
         try {
@@ -20,6 +21,7 @@ public class Dictionary {
 
     public void run(PasswordChecker pc) {
         password = words.get(rnd.nextInt(words.size()));
+        String first = Character.toString(password.charAt(0));
         System.out.println(password + "\n===========================");
         for(int i = 0; i < 1000000; i++) {
             String chosen = words.get(rnd.nextInt(words.size() - 1));
@@ -27,6 +29,10 @@ public class Dictionary {
                 chosen = words.get(rnd.nextInt(words.size() - 1));
 
             }
+            /*if (Math.random() < threshold){
+                chosen = first.concat(chosen);
+
+            }*/
             t = System.nanoTime();
             pc.checkPassword(chosen, password);
             t = System.nanoTime() - t;
