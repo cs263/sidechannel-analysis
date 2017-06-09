@@ -1,11 +1,11 @@
 \section{Side-Channel Analysis}
 
-Any algorithm used in software system must be implemented. It must be written, compiled or interpreted, run on an operating system using hardware in some environment. 
+Any algorithm used in software system must be implemented. It must be written, compiled or interpreted, run on an operating system on certain hardware in some environment. 
 By not focusing on the result of the computation, but rather on the side-effects
 manifest in this physical implementation, one can gain knowledge of some
 implementational details, and thus the structure of the computation itself. Information obtained in this manner is called side-channel information. Side-channels manifest through a large variety of observable properties. For example, the execution time of a program could leak information about which program path was followed or the power trace of a program could correlate with the operations performed. Previously exploited channels include but are not limited to time, power, space, memory, acoustic, and electrogmanetic. 
 
-Side-channel attacks have been increasingly demonstrated as a threat to the confidentiality of private user information. \cite{brumley2005remote, brumley2011remote, hund2013practical, mangard2008power,messerges2000using}. Despite this, programmers remain largely unaware of their threat and there is a of usable tools for their detection let alone preventative. 
+Side-channel attacks have been increasingly demonstrated as a threat to the confidentiality of private user information. \cite{brumley2005remote, brumley2011remote, hund2013practical, mangard2008power,messerges2000using}. Despite this, programmers remain largely unaware of their threat and there is a dearth of usable tools for their detection let alone preventative. 
 
 
 \subsection{Outline}
@@ -18,6 +18,4 @@ Since runtime systems are complex architectures built for speed, they have the p
 
 The answers to these questions could give an idea of how certain implementation
 details decide on how suitable a runtime or language is for tasks that need a level
-of discretion in lieu of a potential side-channel, as well as how they could 
-decide some further optimizations.
-
+of discretion in lieu of a potential side-channel as well as some insight into potential future methods for the detection and prevention of side-channels. 
