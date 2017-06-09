@@ -13,9 +13,7 @@ public class PasswordConstantNoLengthCheck implements PasswordChecker {
 
     public boolean checkPassword(String s, final String password){
         int res = 0;
-        
         for (int i = 0; i < 4; i++){
-            
             res |= s.charAt(i) ^ password.charAt(i);
         }
         return res == 0;
