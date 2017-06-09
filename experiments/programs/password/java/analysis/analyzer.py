@@ -22,16 +22,25 @@ def plot():
 		if key!=secret:
 			y.append(results[key])
 			x.append(1)
-
 	plt.scatter(x,y,c='blue')
 	plt.scatter(1,results[secret],c='red')
 	plt.show()
+
+
+def reject(data,m=2):
+	d = np.abs(data - np.mean(data))
+	mdev = np.std(d)
+	s = [d/mdev if mdev else 0] 
+	return data[s<m]
+
 
 def process():
 	for key in results.keys():
 		if (len(results[key]) < 1000):
 			del results[key]
 			continue
+		#remove the outliers first 
+		results[key] = reject(results[key])
 		results[key] = np.mean(results[key])
 
 if __name__ == "__main__":
@@ -42,7 +51,7 @@ if __name__ == "__main__":
 				print("first letter is " + line[0])
 				secret = line[0]
 			continue
-		if i < 100000:
+		if i < 900000:
 			continue
 		in_out = line.split()
 		if in_out:
