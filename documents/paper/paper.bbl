@@ -1,0 +1,39 @@
+\begin{thebibliography}{1}
+
+\bibitem{brumley2005remote}
+David Brumley and Dan Boneh.
+\newblock Remote timing attacks are practical.
+\newblock {\em Computer Networks}, 48(5):701--716, 2005.
+
+\bibitem{brumley2011remote}
+Billy~Bob Brumley and Nicola Tuveri.
+\newblock Remote timing attacks are still practical.
+\newblock In {\em European Symposium on Research in Computer Security}, pages
+  355--371. Springer, 2011.
+
+\bibitem{hund2013practical}
+Ralf Hund, Carsten Willems, and Thorsten Holz.
+\newblock Practical timing side channel attacks against kernel space aslr.
+\newblock In {\em Security and Privacy (SP), 2013 IEEE Symposium on}, pages
+  191--205. IEEE, 2013.
+
+\bibitem{mangard2008power}
+Stefan Mangard, Elisabeth Oswald, and Thomas Popp.
+\newblock {\em Power analysis attacks: Revealing the secrets of smart cards},
+  volume~31.
+\newblock Springer Science \& Business Media, 2008.
+
+\bibitem{messerges2000using}
+Thomas Messerges.
+\newblock Using second-order power analysis to attack dpa resistant software.
+\newblock In {\em Cryptographic Hardware and Embedded Systems—CHES 2000},
+  pages 27--78. Springer, 2000.
+
+\bibitem{oberg2014leveraging}
+Jason Oberg, Sarah Meiklejohn, Timothy Sherwood, and Ryan Kastner.
+\newblock Leveraging gate-level properties to identify hardware timing
+  channels.
+\newblock {\em IEEE Transactions on Computer-Aided Design of Integrated
+  Circuits and Systems}, 33(9):1288--1301, 2014.
+
+\end{thebibliography}
