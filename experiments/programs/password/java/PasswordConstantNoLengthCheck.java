@@ -13,16 +13,9 @@ public class PasswordConstantNoLengthCheck implements PasswordChecker {
 
     public boolean checkPassword(String s, final String password){
         int res = 0;
-         int min = Math.min(s.length(), password.length());
-            if (min > 4){
-            min = 4;
-        }
-        for (int i = 0; i < min; i++){
-            /*try {
-                Thread.sleep(1);
-            } catch(InterruptedException ex){
-                Thread.currentThread().interrupt();
-            }*/
+        
+        for (int i = 0; i < 4; i++){
+            
             res |= s.charAt(i) ^ password.charAt(i);
         }
         return res == 0;
