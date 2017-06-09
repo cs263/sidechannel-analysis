@@ -1,0 +1,18 @@
+\section{Discussion}
+
+In our exploration of timing side channels, a repeated observation was that vulnerabilities were introduced from atemptes at optimization, whether by the programmer or the compiler. 
+This phenomenon builds a kind of philosophical construct similar to the Heisenberg
+uncertainty principle wherein the limitations of our physical reality are stopping
+us from being both optimized (take less time in most cases) and, for example, 
+completely computationally private (as observed in \cite{archlab-timing-14}). The
+case in which the least side-channel activity is present is the case in which the 
+lengths of all the possible routes of execution of the main-channel are of similar
+size, and thus observation becomes noisy in the presence of other physical factors.
+This, unsurprisingly, is the case in which there is no optimization made and all the
+lengths are similar to the longest one.
+
+
+%to be cleaned up
+
+%mainly discuss optimization versus safety 
+%optimization on many levels, programmer versus compiler
