@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class Inline  {
     static SecureRandom rnd = new SecureRandom();
-    static int threshold = 25;
+    static int threshold = 90;
     private static StringBuffer buf = new StringBuffer();    
         private static long t;
 
@@ -22,10 +22,6 @@ public class Inline  {
             t = System.nanoTime() - t;
             System.out.print((guess<threshold) + " " );
             System.out.println(t);
-            /*buf.append(guess < threshold);
-            buf.append(" ");
-            buf.append(t);
-            buf.append("\n");*/
 
         }
                 System.out.println(buf.toString());
@@ -53,7 +49,7 @@ public class Inline  {
         }
         else{
             for (int i = 0; i < 100000; i++){
-                doWork2(i);
+                doWork(i);
             }
         }
         return false;
