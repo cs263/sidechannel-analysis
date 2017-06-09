@@ -12,12 +12,7 @@ public class PasswordInsecureNoLengthCheck implements PasswordChecker {
     }
 
     public boolean checkPassword(String s, final String password) {
-        int min = Math.min(s.length(), password.length());
-        for (int i = 0; i < min; i++) {
-            try {
-                Thread.sleep(1);
-            } catch(Exception e) {}
-
+        for (int i = 0; i < 4; i++) {
             if (s.charAt(i) != password.charAt(i)) {
                 return false;
             }

@@ -24,6 +24,7 @@ public class PasswordTwoBranches implements PasswordChecker {
                 flag[1] = false;
             }
         }
+
         return flag[rnd.nextInt(2)];
     }
 
