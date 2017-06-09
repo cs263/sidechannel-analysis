@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 #Very hacked code to get quick results. Just pipe the output of your run java V=.... run > file1 and run python analyzer.py file1. 
 results = {}
 secret = None
+fname = None
 
 def update_res(num, word):
 	k = word[0]
@@ -22,9 +23,17 @@ def plot():
 		if key!=secret:
 			y.append(results[key])
 			x.append(1)
+	n = "Balanced Branches"
+	if "dist" in fname:
+		n += " Even distribution"
+	if "JIT" in fname:
+		n += " No JIT"
+	
+	plt.title(n)
 	plt.scatter(x,y,c='blue')
 	plt.scatter(1,results[secret],c='red')
-	plt.show()
+	#plt.show()
+	plt.savefig("%s.png" %fname)
 
 
 def reject(data,m=2):
@@ -45,6 +54,8 @@ def process():
 
 if __name__ == "__main__":
 	input_file = sys.argv[1]
+	fname = input_file[0:-8]
+	print(fname)
 	for i,line in enumerate(open(input_file)):
 		if i < 3:
 			if i == 1:
